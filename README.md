@@ -1,8 +1,12 @@
 # WavyKit
 
 WavyKit develops composable Laravel application-experience components. The
-development monorepo currently contains [Pages](packages/pages/README.md), an
-unreleased page registry for breadcrumbs and navigation.
+development monorepo contains these unreleased packages:
+
+| Package | Purpose |
+| --- | --- |
+| [`wavykit/pages`](packages/pages/README.md) | Page identity, hierarchy, route association, request context, and breadcrumbs. |
+| [`wavykit/navigation`](packages/navigation/README.md) | Named menus derived from, or arranged around, registered pages. Requires Pages. |
 
 ## Development
 
@@ -12,7 +16,7 @@ documentation, and tool configuration:
 
 ```sh
 composer install
-composer check        # or: composer check pages
+composer check        # or: composer check pages navigation
 ```
 
 Packages are released together with lockstep `vX.Y.Z` tags and distributed
@@ -24,4 +28,5 @@ remote, split repository, or publication exists yet.
 
 WavyKit maintainers own this repository. Pages was brought into the monorepo
 with its existing Git history; its Composer identity remains `wavykit/pages`.
+Navigation was extracted from Pages inside the monorepo.
 Publishing and repository distribution require separate decisions and approval.

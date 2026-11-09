@@ -18,13 +18,21 @@ Each package lives in `packages/<name>/` and contains:
 - `.github/workflows/close-pull-request.yml`, which only runs in the split
   repository and redirects contributors here.
 
+Tests live with their package, as in Symfony's components, rather than in a
+root `tests/` folder as in Laravel's framework. Each package can then be
+checked and released on its own, and a package that depends on another tests
+the two together. A root `tests/` folder is reserved for future integration
+tests that span several packages.
+
 ## Development install
 
 The root `composer.json` is `wavykit/monorepo`, a development-only manifest
 that is never published. It installs every package from `packages/*` through
-a path repository, at version `0.1.x-dev`. It also holds the development
-dependencies, test autoloading, scripts, and the PHP 8.3 resolution platform.
-`composer.lock` is local and ignored.
+a path repository, at version `0.1.x-dev`, and requires each one as
+`^0.1@dev`. The `@dev` flag lets only these packages resolve to development
+versions; everything else stays stable, including `--prefer-lowest` runs. It
+also holds the development dependencies, test autoloading, scripts, and the PHP
+8.3 resolution platform. `composer.lock` is local and ignored.
 
 ```sh
 composer install
@@ -35,7 +43,9 @@ composer format [package] # apply Pint
 
 [`bin/check`](../bin/check) validates the root manifest and runs
 `monorepo-builder validate`, so packages cannot require shared dependencies
-with different constraints. Then, for each package, it validates the package
+with different constraints. Validation always includes the root manifest, so
+[monorepo-builder.php](../monorepo-builder.php) excludes the internal
+`wavykit/*` names, which the root requires with `@dev`. Then, for each package, it validates the package
 manifest and runs Pint, PHPStan, and Pest with that package's configuration.
 Pint and PHPStan run in the package directory. Pest runs from the root,
 because it resolves its root from the `vendor/` location. monorepo-builder
@@ -98,8 +108,9 @@ manifest requires them.
 2. Create the empty read-only repository `<owner>/<name>` and grant the split
    token write access to it before the next push to `main`.
 3. In the root `composer.json`, add the package to the path repository's
-   `versions` option and to `require` at `0.1.x-dev` (the current development
-   line). Add its test namespace to `autoload-dev`.
+   `versions` option at `0.1.x-dev` (the current development line) and to
+   `require` as `^0.1@dev`. Add its test namespace to `autoload-dev`, and add
+   its name to the version-conflict exclusions in `monorepo-builder.php`.
 4. If the package depends on another WavyKit package, require it with a normal
    constraint such as `^0.1`. The root path repository supplies the local copy.
 5. Add the package to the root README.

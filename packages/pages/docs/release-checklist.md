@@ -7,16 +7,16 @@ implementation or dependency constraints change.
 
 ## Local readiness
 
-- [x] Keep scope to page metadata, breadcrumbs, and named menus; application owns routing and authorization.
+- [x] Keep scope to page metadata, hierarchy, and breadcrumbs; named menus live in `wavykit/navigation`, and the application owns routing and authorization.
 - [x] Review the public API against the prototype and consumer usage.
 - [x] Document registration lifecycle, callbacks, errors, visibility, and output semantics in public API docblocks.
 - [x] Provide installation, registration, rendering, resource, and route-cache examples in the README.
 - [x] Include MIT license, matching Composer identity, and an Unreleased changelog.
-- [x] Verify the complete suite on PHP 8.3, 8.4, and 8.5 (see [verification limits](../README.md#verification-limits)).
+- [ ] Verify the complete suite on PHP 8.3, 8.4, and 8.5 after the navigation split (passed before it; see [verification limits](../README.md#verification-limits)). Monorepo CI covers this once it runs on GitHub.
 - [x] Check a lowest-installable dependency resolution; retain its documented deprecation caveat.
-- [x] Validate a separate Laravel/Inertia consumer, including route-cache round trips.
-- [x] Check a stripped archive's runtime installation, class autoloading, and hierarchy/menu behavior.
-- [x] Run current Composer checks after the API documentation pass and review the diff (PHP 8.5: 43 tests, 169 assertions; executable tokens unchanged).
+- [ ] Validate a separate Laravel/Inertia consumer, including route-cache round trips, against the split packages (passed before the split).
+- [x] Check a stripped archive's runtime installation, class autoloading, and hierarchy behavior (repeated after the split, installed together with `wavykit/navigation`).
+- [x] Run the root `composer check` after the navigation split (PHP 8.5: 24 tests, 79 assertions for Pages; stable and lowest-installable resolutions).
 - [x] Commit the reviewed documentation changes when authorized.
 
 ## Repository and release preparation
