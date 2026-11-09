@@ -2,6 +2,15 @@
 
 Named Laravel menus derived from, or arranged around, WavyKit pages.
 
+Menus read the same page definitions as breadcrumbs, so labels, URLs, and
+current and active states stay consistent across the application. A menu can
+follow the page hierarchy, or arrange pages its own way without changing their
+breadcrumbs. Visibility is decided per request, and a hidden entry's label and
+URL are never resolved.
+
+Most applications start here: installing Navigation also installs
+[`wavykit/pages`](../pages/README.md).
+
 Package: `wavykit/navigation`. Namespace: `WavyKit\Navigation\`. Maintained by WavyKit.
 Unreleased development package. The public API remains subject to change before release.
 

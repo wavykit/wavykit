@@ -1,11 +1,17 @@
 # WavyKit Pages
 
-A Laravel page registry for consistent page identity, hierarchy, and breadcrumbs.
+The foundation of WavyKit: one definition of each page in a Laravel
+application, which breadcrumbs, menus, and other WavyKit components read from.
+
+A page has a stable ID, a place in the hierarchy, a label that can come from the
+bound resource, and an optional association with an existing named route. The
+ID is separate from the route, so a page keeps its identity when a URL changes,
+and a page can exist without a route. Pages on its own provides breadcrumbs. For
+menus, install [`wavykit/navigation`](../navigation/README.md), which requires
+Pages and installs it automatically.
 
 Package: `wavykit/pages`. Namespace: `WavyKit\Pages\`. Maintained by WavyKit.
 Unreleased development package: the planned v0.1 behavior is implemented. The public API remains subject to change before release.
-Named menus built from these pages are provided by the separate
-`wavykit/navigation` package.
 
 ## Requirements
 

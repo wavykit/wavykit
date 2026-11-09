@@ -1,12 +1,34 @@
 # WavyKit
 
-WavyKit develops composable Laravel application-experience components. The
-development monorepo contains these unreleased packages:
+Composable Laravel components built on one shared map of your application's
+pages.
+
+Each page is defined once, with a stable ID, its place in the hierarchy, a
+label, and the named route it belongs to. Every WavyKit component reads from
+that definition: breadcrumbs come from Pages and menus from Navigation, so
+labels, URLs, and active states always agree. Routes, controllers,
+authorization, and rendering stay with your application. Components return
+plain data for Blade, Inertia, or any other frontend.
+
+## Getting started
+
+Most applications start with menus and breadcrumbs together:
+
+```sh
+composer require wavykit/navigation
+```
+
+Navigation requires Pages, so this installs both. For breadcrumbs only, install
+`wavykit/pages` on its own. Both packages are unreleased; the first release is
+planned as `v0.1.0` for Laravel 13 and PHP 8.3+.
 
 | Package | Purpose |
 | --- | --- |
-| [`wavykit/pages`](packages/pages/README.md) | Page identity, hierarchy, route association, request context, and breadcrumbs. |
+| [`wavykit/pages`](packages/pages/README.md) | The foundation: page identity, hierarchy, route association, request context, and breadcrumbs. |
 | [`wavykit/navigation`](packages/navigation/README.md) | Named menus derived from, or arranged around, registered pages. Requires Pages. |
+
+See [Direction and decisions](docs/decisions.md) for package boundaries,
+supported versions, and what is planned next.
 
 ## Development
 
@@ -21,8 +43,9 @@ composer check        # or: composer check pages navigation
 
 Packages are released together with lockstep `vX.Y.Z` tags and distributed
 through read-only split repositories; CI runs every package's checks. See [Monorepo layout and releases](docs/monorepo.md)
-for the layout, release workflow, and the one-time setup that remains. No
-remote, split repository, or publication exists yet.
+for the layout, release workflow, and the one-time setup that remains. The
+monorepo and split repositories are public on GitHub; nothing has been
+published to Packagist yet.
 
 ## Ownership
 
