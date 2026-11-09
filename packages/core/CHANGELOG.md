@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+No changes yet.
+
+## 0.1.0 - 2026-11-09
+
+First release.
+
 ### Added
 
 - Laravel 13 page registration with stable IDs and existing named-route associations.

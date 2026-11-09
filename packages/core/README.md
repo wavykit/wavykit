@@ -17,8 +17,8 @@ returns plain data for Blade, Inertia, or any other frontend.
 
 Package: `wavykit/core`. Namespaces: `WavyKit\Pages\` (pages),
 `WavyKit\Navigation\` (breadcrumbs and menus), and `WavyKit\Context`.
-Maintained by WavyKit. Unreleased development package; the public API remains
-subject to change before release.
+Maintained by WavyKit. Version 0.1.0 is the first release. While WavyKit is on
+0.x, minor releases may change the public API; see [Versioning](#versioning).
 
 ## Requirements
 
@@ -27,7 +27,7 @@ or database requirement.
 
 ## Installation
 
-This package has not been published yet. Once a public release is available:
+Install with Composer:
 
 ```sh
 composer require wavykit/core
@@ -395,6 +395,6 @@ split repository. Composer derives versions from those tags, so `composer.json`
 does not contain a version field. The release process is documented in the
 monorepo's `docs/monorepo.md`; contribute there, not to the split repository.
 
-See [the changelog](CHANGELOG.md) for release changes and the
-[first release checklist](docs/release-checklist.md) for remaining preparation.
-Tagging and publishing are separate from preparing or reviewing a release.
+See [the changelog](CHANGELOG.md) for release changes. The
+[first release checklist](docs/release-checklist.md) records how `v0.1.0` was
+prepared.

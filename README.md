@@ -18,10 +18,9 @@ returns plain data for Blade, Inertia, or any other frontend.
 composer require wavykit/core
 ```
 
-The core provides pages, breadcrumbs, and menus. It is unreleased; the first
-release is planned as `v0.1.0` for Laravel 13 and PHP 8.3+. The API is being
-finalized before that release, so pull requests are not open yet; issues and
-feedback are welcome (see [CONTRIBUTING.md](CONTRIBUTING.md)).
+The core provides pages, breadcrumbs, and menus. The first release is
+`v0.1.0`, for Laravel 13 and PHP 8.3+. Pull requests are not open yet; issues
+and feedback are welcome (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 
 | Package | Purpose |
 | --- | --- |
