@@ -118,11 +118,11 @@ manifest requires them.
 
 ## One-time setup
 
-Steps 1–3 were done on 2026-11-09 for `wavykit/wavykit` and the former
-`wavykit/pages` and `wavykit/navigation` split repositories, all public. The
-core package (`packages/core/`) still needs its `core` split repository set up,
-and the former split repositories removed, with separate approval. Step 4 waits
-for the first release and needs separate approval:
+Steps 1–3 were done on 2026-11-09 for `wavykit/wavykit` and `wavykit/core`,
+both public; the `core` split history starts at the commit that merged Pages
+and Navigation into the core. The former `wavykit/pages` and
+`wavykit/navigation` split repositories are to be deleted. Step 4 waits for the
+first release and needs separate approval:
 
 1. Create the monorepo on GitHub as `<owner>/wavykit` and push `main`.
 2. Create a read-only repository `<owner>/<name>` for each package, without

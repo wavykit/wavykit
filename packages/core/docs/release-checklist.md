@@ -13,7 +13,7 @@ repeated when the implementation or dependency constraints change.
 - [x] Include MIT license, matching Composer identity, and an Unreleased changelog.
 - [x] Restructure Pages and Navigation into `wavykit/core` (WK-018) and run the root `composer check` (PHP 8.5: 51 tests, 208 assertions).
 - [ ] Decide the public API in the API review (WK-012) and implement agreed changes.
-- [ ] Verify the suite on PHP 8.3, 8.4, and 8.5 with lowest and stable resolutions after the restructure (monorepo CI; passed for the two former packages on 2026-11-09).
+- [x] Verify the suite on PHP 8.3, 8.4, and 8.5 with lowest and stable resolutions after the restructure (monorepo CI passed on `b870f39`, 2026-11-09).
 - [x] Check a stripped archive's runtime installation, class autoloading, provider discovery, and page and menu behavior after the restructure (2026-11-09, with `laravel/framework` in a scratch application).
 - [x] Validate the playground consumer, including route-cache round trips, after the restructure (2026-11-09).
 - [ ] Validate the playground consumer again after WK-012.
@@ -22,8 +22,9 @@ repeated when the implementation or dependency constraints change.
 
 - [x] Choose the distribution model: developed in the WavyKit monorepo, published through a read-only split repository with lockstep monorepo tags (see the monorepo's `docs/monorepo.md`).
 - [x] Add monorepo CI for PHP 8.3–8.5 with lowest and stable dependency resolutions.
-- [ ] Set up the read-only `core` split repository, remove the former `pages` and `navigation` split repositories, and update the split GitHub App's repositories when authorized.
-- [ ] Confirm CI passes on GitHub and the `core` split repository receives `main`.
+- [x] Set up the read-only `core` split repository and add it to the split GitHub App (2026-11-09; its history starts at the restructure commit).
+- [ ] Delete the former `pages` and `navigation` split repositories and remove them from the split GitHub App.
+- [x] Confirm CI passes on GitHub and the `core` split repository receives `main` (2026-11-09, `b870f39`).
 - [ ] Confirm the initial version and move Unreleased changes into a dated release entry.
 - [ ] Rebuild and inspect the final committed distribution, including new documentation and changelog.
 - [ ] Record final checks and verify that the intended release commit has a clean working tree.
