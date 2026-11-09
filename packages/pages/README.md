@@ -209,8 +209,8 @@ resolution. That older dependency set emits a Symfony Translation deprecation
 under PHP 8.5; diagnostics remain visible and are not suppressed.
 
 The suite passed on PHP 8.3.36, 8.4.26, and 8.5.12 before menus moved to
-`wavykit/navigation`; since then it has run locally on PHP 8.5.12, and monorepo
-CI is configured for PHP 8.3–8.5. PHP 8.3 remains the declared minimum and
+`wavykit/navigation`; since then monorepo CI has passed on PHP 8.3, 8.4, and 8.5
+with lowest and stable resolutions. PHP 8.3 remains the declared minimum and
 dependency-resolution platform. A separate Laravel 13 / Inertia 3 / React
 consumer trial, using Pages with `wavykit/navigation`, passes its application
 checks, and its page output is identical with and without cached routes. These are
