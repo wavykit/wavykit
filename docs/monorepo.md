@@ -117,9 +117,10 @@ manifest requires them.
 
 ## One-time setup
 
-Steps 1 and 2 were done on 2026-11-09 for `wavykit/wavykit`, `wavykit/pages`,
-and `wavykit/navigation`, all public. The others remain and need separate
-approval:
+Steps 1–3 were done on 2026-11-09 for `wavykit/wavykit`, `wavykit/pages`, and
+`wavykit/navigation`, all public; the first split run with the app pushed `main`
+to both split repositories. Step 4 waits for the first release and needs
+separate approval:
 
 1. Create the monorepo on GitHub as `<owner>/wavykit` and push `main`.
 2. Create a read-only repository `<owner>/<name>` for each package, without
