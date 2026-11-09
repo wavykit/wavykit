@@ -76,16 +76,13 @@ final readonly class Pages
     {
         $context = $this->context();
         $current = $context->page;
-        if ($current === null) {
-            return [];
-        }
 
         return array_map(fn (PageDefinition $page): array => [
             'pageId' => $page->id,
             'label' => $this->label($page, $context),
-            'url' => $page->id === $current->id ? null : $this->url($page, $context),
-            'current' => $page->id === $current->id,
-        ], $this->registry->trail($current->id));
+            'url' => $page->id === $current?->id ? null : $this->url($page, $context),
+            'current' => $page->id === $current?->id,
+        ], $this->activeTrail($context));
     }
 
     /**
@@ -101,44 +98,27 @@ final readonly class Pages
      */
     public function navigation(string $name): array
     {
-        $context = $this->context();
-        $current = $context->page;
-        $activeIds = $current === null ? [] : array_map(fn (PageDefinition $page): string => $page->id, $this->registry->trail($current->id));
-
-        $entries = $this->registry->menuEntries($name);
-
-        return $entries === null
-            ? $this->items($this->registry->menuRoots($name), $context, $activeIds)
-            : $this->explicitItems($name, $entries, $context, $activeIds);
+        return (new Navigation($this, $this->registry))->menu($name);
     }
 
     /**
-     * @param  list<PageDefinition>  $pages
-     * @param  list<string>  $activeIds
-     * @return list<NavigationItem>
+     * Read the active page's ancestry, root first; empty when no page is active.
+     *
+     * @return list<PageDefinition>
+     *
+     * @throws LogicException If registry finalization fails.
      */
-    private function items(array $pages, PageContext $context, array $activeIds): array
+    public function activeTrail(PageContext $context): array
     {
-        $items = [];
-        foreach ($pages as $page) {
-            if (! $page->navigationVisible) {
-                continue;
-            }
-            $items[] = new NavigationItem(
-                $page->id,
-                $this->label($page, $context),
-                $this->url($page, $context),
-                $page->id === $context->page?->id,
-                in_array($page->id, $activeIds, true),
-                $this->items($this->registry->children($page->id), $context, $activeIds),
-                $page->icon,
-            );
-        }
-
-        return $items;
+        return $context->page === null ? [] : $this->registry->trail($context->page->id);
     }
 
-    private function label(PageDefinition $page, PageContext $context): string
+    /**
+     * Resolve a page's label, running its callback with the given context.
+     *
+     * @throws LogicException If the callback throws or does not return a string.
+     */
+    public function label(PageDefinition $page, PageContext $context): string
     {
         return $this->resolveLabel($page->label, $context, "page '{$page->id}'");
     }
@@ -162,59 +142,14 @@ final readonly class Pages
     }
 
     /**
-     * @param  list<MenuDefinition>  $entries
-     * @param  list<string>  $activeIds
-     * @return list<NavigationItem>
+     * Generate a page's URL, or null for a route-less page.
+     *
+     * Forwards only parameters the destination route declares, from the page's
+     * parameter mapping when present, otherwise from the active route.
+     *
+     * @throws LogicException If the route is unknown, the mapping is invalid, or URL generation fails.
      */
-    private function explicitItems(string $name, array $entries, PageContext $context, array $activeIds): array
-    {
-        $items = [];
-        foreach ($entries as $entry) {
-            $owner = "menu '{$name}' entry '{$entry->id}'";
-            // Guard before resolving resource-dependent labels, URLs, or descendants.
-            if ($entry->visibility !== null) {
-                try {
-                    $visible = ($entry->visibility)($context);
-                } catch (Throwable $exception) {
-                    throw new LogicException("Could not resolve visibility for {$owner}: {$exception->getMessage()}", 0, $exception);
-                }
-                if (! is_bool($visible)) {
-                    throw new LogicException("Visibility callback for {$owner} must return a bool.");
-                }
-                if (! $visible) {
-                    continue;
-                }
-            }
-
-            $children = $this->explicitItems($name, $entry->children, $context, $activeIds);
-            if ($entry->isGroup && $children === []) {
-                continue;
-            }
-            $page = $entry->isGroup ? null : $this->registry->page($entry->id);
-            $label = $entry->label !== null
-                ? $this->resolveLabel($entry->label, $context, $owner)
-                : ($page === null ? $entry->id : $this->label($page, $context));
-            $activeChild = false;
-            foreach ($children as $child) {
-                $activeChild = $activeChild || $child->active;
-            }
-
-            $items[] = new NavigationItem(
-                $page?->id,
-                $label,
-                $page === null ? null : $this->url($page, $context),
-                $page !== null && $page->id === $context->page?->id,
-                $activeChild || ($page !== null && in_array($page->id, $activeIds, true)),
-                $children,
-                $entry->icon ?? $page?->icon,
-                $entry->isGroup ? 'group' : 'page',
-            );
-        }
-
-        return $items;
-    }
-
-    private function url(PageDefinition $page, PageContext $context): ?string
+    public function url(PageDefinition $page, PageContext $context): ?string
     {
         if ($page->routeName === null) {
             return null;

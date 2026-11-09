@@ -12,13 +12,14 @@ final class PageRegistry
     /** @var array<string, PageDefinition> */
     private array $definitions = [];
 
-    /** @var array<string, list<string>> */
-    private array $menus = [];
-
-    /** @var array<string, list<MenuDefinition>> */
-    private array $explicitMenus = [];
+    private readonly MenuRegistry $menus;
 
     private bool $finalized = false;
+
+    public function __construct()
+    {
+        $this->menus = new MenuRegistry;
+    }
 
     /**
      * Snapshot declarations without resolving labels, URLs, or visibility.
@@ -50,8 +51,7 @@ final class PageRegistry
     public function deriveMenu(string $name, string ...$roots): void
     {
         $this->assertMutable();
-        $this->assertMenuName($name);
-        $this->menus[$name] = array_values($roots);
+        $this->menus->derive($name, ...$roots);
     }
 
     /**
@@ -65,15 +65,14 @@ final class PageRegistry
     public function defineMenu(string $name, Menu ...$entries): void
     {
         $this->assertMutable();
-        $this->assertMenuName($name);
-        $this->explicitMenus[$name] = array_map(fn (Menu $entry): MenuDefinition => $this->snapshotMenu($entry, []), array_values($entries));
+        $this->menus->define($name, ...$entries);
     }
 
     /**
      * Validate references and freeze registrations; repeated calls are harmless.
      *
      * All public registry reads invoke this automatically. Laravel route existence
-     * is checked separately when resolving output through Laravel\Pages.
+     * is checked separately when resolving output through Pages.
      *
      * @throws LogicException For missing or cyclic parents, duplicate route associations, or invalid menus.
      */
@@ -94,17 +93,7 @@ final class PageRegistry
             $this->walk($page);
         }
 
-        foreach ($this->menus as $name => $roots) {
-            $seen = [];
-            foreach ($roots as $id) {
-                $this->validateMenuBranch($name, $this->lookup($id), $seen);
-            }
-        }
-        foreach ($this->explicitMenus as $name => $entries) {
-            $seenPages = [];
-            $seenGroups = [];
-            $this->validateEntries($name, $entries, $seenPages, $seenGroups);
-        }
+        $this->menus->validate($this->definitions);
         $this->finalized = true;
     }
 
@@ -189,11 +178,8 @@ final class PageRegistry
     public function menuRoots(string $name): array
     {
         $this->finalize();
-        if (! array_key_exists($name, $this->menus)) {
-            throw new LogicException("Unknown menu '{$name}'.");
-        }
 
-        return array_map(fn (string $id): PageDefinition => $this->lookup($id), $this->menus[$name]);
+        return array_map(fn (string $id): PageDefinition => $this->lookup($id), $this->menus->roots($name));
     }
 
     /**
@@ -206,14 +192,8 @@ final class PageRegistry
     public function menuEntries(string $name): ?array
     {
         $this->finalize();
-        if (array_key_exists($name, $this->explicitMenus)) {
-            return $this->explicitMenus[$name];
-        }
-        if (! array_key_exists($name, $this->menus)) {
-            throw new LogicException("Unknown menu '{$name}'.");
-        }
 
-        return null;
+        return $this->menus->entries($name);
     }
 
     /** @param array<string, PageDefinition> $pending */
@@ -257,72 +237,10 @@ final class PageRegistry
         }
     }
 
-    /** @param array<string, bool> $seen */
-    private function validateMenuBranch(string $name, PageDefinition $page, array &$seen): void
-    {
-        if (isset($seen[$page->id])) {
-            throw new LogicException("Menu '{$name}' includes page '{$page->id}' more than once.");
-        }
-        $seen[$page->id] = true;
-        foreach ($this->definitions as $child) {
-            if ($child->parentId === $page->id) {
-                $this->validateMenuBranch($name, $child, $seen);
-            }
-        }
-    }
-
     private function assertMutable(): void
     {
         if ($this->finalized) {
             throw new LogicException('Page definitions and menus must be registered before the registry is resolved.');
-        }
-    }
-
-    private function assertMenuName(string $name): void
-    {
-        if (trim($name) === '' || array_key_exists($name, $this->menus) || array_key_exists($name, $this->explicitMenus)) {
-            throw new LogicException("Menu '{$name}' must have a unique, non-empty name.");
-        }
-    }
-
-    /** @param list<int> $ancestors */
-    private function snapshotMenu(Menu $entry, array $ancestors): MenuDefinition
-    {
-        if (trim($entry->id) === '') {
-            throw new LogicException('Menu entries must have non-empty IDs.');
-        }
-        if (in_array(spl_object_id($entry), $ancestors, true)) {
-            throw new LogicException("Menu entry '{$entry->id}' contains a cycle.");
-        }
-        $ancestors[] = spl_object_id($entry);
-
-        return new MenuDefinition($entry->id, $entry->isGroup, $entry->label, $entry->icon, $entry->visibility,
-            array_map(fn (Menu $child): MenuDefinition => $this->snapshotMenu($child, $ancestors), $entry->entries));
-    }
-
-    /**
-     * @param  list<MenuDefinition>  $entries
-     * @param  array<string, bool>  $seenPages
-     * @param  array<string, bool>  $seenGroups
-     */
-    private function validateEntries(string $name, array $entries, array &$seenPages, array &$seenGroups): void
-    {
-        foreach ($entries as $entry) {
-            if ($entry->isGroup) {
-                if (isset($seenGroups[$entry->id])) {
-                    throw new LogicException("Menu '{$name}' includes group '{$entry->id}' more than once.");
-                }
-                $seenGroups[$entry->id] = true;
-            } else {
-                if (! isset($this->definitions[$entry->id])) {
-                    throw new LogicException("Menu '{$name}' references unknown page '{$entry->id}'.");
-                }
-                if (isset($seenPages[$entry->id])) {
-                    throw new LogicException("Menu '{$name}' includes page '{$entry->id}' more than once.");
-                }
-                $seenPages[$entry->id] = true;
-            }
-            $this->validateEntries($name, $entry->children, $seenPages, $seenGroups);
         }
     }
 }
