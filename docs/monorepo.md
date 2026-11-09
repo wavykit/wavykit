@@ -121,7 +121,7 @@ manifest requires them.
 Steps 1–3 were done on 2026-11-09 for `wavykit/wavykit` and `wavykit/core`,
 both public; the `core` split history starts at the commit that merged Pages
 and Navigation into the core. The former `wavykit/pages` and
-`wavykit/navigation` split repositories are to be deleted. Step 4 waits for the
+`wavykit/navigation` split repositories were deleted. Step 4 waits for the
 first release and needs separate approval:
 
 1. Create the monorepo on GitHub as `<owner>/wavykit` and push `main`.

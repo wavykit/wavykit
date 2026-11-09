@@ -23,7 +23,7 @@ repeated when the implementation or dependency constraints change.
 - [x] Choose the distribution model: developed in the WavyKit monorepo, published through a read-only split repository with lockstep monorepo tags (see the monorepo's `docs/monorepo.md`).
 - [x] Add monorepo CI for PHP 8.3–8.5 with lowest and stable dependency resolutions.
 - [x] Set up the read-only `core` split repository and add it to the split GitHub App (2026-11-09; its history starts at the restructure commit).
-- [ ] Delete the former `pages` and `navigation` split repositories and remove them from the split GitHub App.
+- [x] Delete the former `pages` and `navigation` split repositories (2026-11-09).
 - [x] Confirm CI passes on GitHub and the `core` split repository receives `main` (2026-11-09, `b870f39`).
 - [ ] Confirm the initial version and move Unreleased changes into a dated release entry.
 - [ ] Rebuild and inspect the final committed distribution, including new documentation and changelog.
