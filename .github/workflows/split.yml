@@ -1,0 +1,62 @@
+name: Split packages
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: split-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  packages:
+    name: List packages
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.list.outputs.packages }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: list
+        run: echo "packages=$(find packages -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
+
+  split:
+    name: Split ${{ matrix.package }}
+    needs: packages
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.packages.outputs.packages) }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Split and push to the read-only repository
+        env:
+          SPLIT_TOKEN: ${{ secrets.SPLIT_TOKEN }}
+          PACKAGE: ${{ matrix.package }}
+          OWNER: ${{ github.repository_owner }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$SPLIT_TOKEN" ]; then
+            echo "::error::SPLIT_TOKEN is not configured; see docs/monorepo.md."
+            exit 1
+          fi
+
+          sha="$(git subtree split --prefix="packages/$PACKAGE" HEAD)"
+
+          if [ "$REF_TYPE" = tag ]; then
+            target="refs/tags/$REF_NAME"
+          else
+            target="refs/heads/$REF_NAME"
+          fi
+
+          git push "https://x-access-token:${SPLIT_TOKEN}@github.com/${OWNER}/${PACKAGE}.git" "$sha:$target"

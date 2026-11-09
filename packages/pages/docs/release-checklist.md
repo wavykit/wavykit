@@ -17,12 +17,14 @@ implementation or dependency constraints change.
 - [x] Validate a separate Laravel/Inertia consumer, including route-cache round trips.
 - [x] Check a stripped archive's runtime installation, class autoloading, and hierarchy/menu behavior.
 - [x] Run current Composer checks after the API documentation pass and review the diff (PHP 8.5: 43 tests, 169 assertions; executable tokens unchanged).
-- [ ] Commit the reviewed documentation changes when authorized.
+- [x] Commit the reviewed documentation changes when authorized.
 
 ## Repository and release preparation
 
-- [ ] Choose the public repository location and create/configure it when authorized.
-- [ ] Configure CI for PHP 8.3–8.5 and dependency resolution when authorized to add workflows.
+- [x] Choose the distribution model: developed in the WavyKit monorepo, published through a read-only `pages` split repository with lockstep monorepo tags (see the monorepo's `docs/monorepo.md`).
+- [x] Add monorepo CI for PHP 8.3–8.5 with lowest and stable dependency resolutions.
+- [ ] Create the monorepo and the read-only `pages` split repository on GitHub and configure the `SPLIT_TOKEN` secret when authorized.
+- [ ] Confirm CI passes on GitHub and the split repository receives `main`.
 - [ ] Confirm the initial version and move Unreleased changes into a dated release entry.
 - [ ] Rebuild and inspect the final committed distribution, including new documentation and changelog.
 - [ ] Record final checks and verify that the intended release commit has a clean working tree.
@@ -30,8 +32,8 @@ implementation or dependency constraints change.
 ## Publication
 
 - [ ] Merge/push the reviewed branch when authorized.
-- [ ] Create and push the version tag when authorized.
-- [ ] Register on Packagist and verify installation from the published version when authorized.
+- [ ] Create and push the version tag on the monorepo when authorized; confirm the split workflow mirrors it to the `pages` repository.
+- [ ] Register the `pages` split repository on Packagist and verify installation from the published version when authorized.
 - [ ] Update the README's unpublished status with the release.
 
 Repository creation, workflow additions, commits, pushes, tags, and publication

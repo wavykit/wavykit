@@ -320,12 +320,16 @@ a production-readiness guarantee. Framework-neutral compatibility is not promise
 The initial release is intended to remain on 0.x while the public API is refined.
 Use minor releases for breaking changes during 0.x and patch releases for
 compatible fixes. At 1.0 and later, breaking public API changes require a major
-release. Git tags use `vMAJOR.MINOR.PATCH`; Composer derives versions from tags,
-so `composer.json` does not contain a version field.
+release. Releases are tagged `vMAJOR.MINOR.PATCH` on the WavyKit monorepo, which
+versions its packages together and mirrors each tag to the read-only `pages`
+split repository. Composer derives versions from those tags, so `composer.json`
+does not contain a version field. The release process is documented in the
+monorepo's `docs/monorepo.md`; contribute there, not to the split repository.
 
 See [the changelog](CHANGELOG.md) for release changes and the
 [first release checklist](docs/release-checklist.md) for remaining preparation. Tagging and publishing are
 separate from preparing or reviewing a release.
 
-This is a standalone Composer package with its own Git repository, dependencies,
-and checks. No workspace CLI is needed to develop or consume it.
+This is an independently installable Composer package developed in the WavyKit
+monorepo, with its own dependencies and checks. No workspace CLI is needed to
+develop or consume it.
