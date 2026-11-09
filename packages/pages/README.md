@@ -275,10 +275,26 @@ at maximum level on source, and executes Pest unit and Testbench integration tes
 `composer format` applies formatting. `composer.lock` is local and ignored; fresh
 checkouts resolve dependencies within the declared constraints. No CI workflow is installed.
 
+## Route caching
+
+Keep page and menu registration in a service provider that runs on every boot,
+including boots that restore cached routes. Do not place it inside a
+`! $app->routesAreCached()` condition or rely on executing a route file to register
+definitions. Laravel's route cache stores route actions, not the page registry.
+Page-label, parameter, and visibility callbacks remain ordinary runtime callbacks
+and are not serialized into the route cache.
+
+The integration fixture boots a small application in separate PHP processes,
+generates the cache with the real `route:cache` command, then boots again from
+cached routes. It compares breadcrumbs, bound-resource URLs, derived/explicit
+menus, and user visibility across consecutive requests. It also checks that
+building the cache does not evaluate page labels.
+
 ## Verification limits
 
 Tests cover static and bound-resource output, parameter mapping, menu nesting and
-overrides, validation errors, and request isolation. The suite is also checked against a lowest-installable dependency
+overrides, validation errors, request isolation, and fresh-process route-cache
+round trips. The suite is also checked against a lowest-installable dependency
 resolution. That older dependency set emits a Symfony Translation deprecation
 under PHP 8.5; diagnostics remain visible and are not suppressed.
 
