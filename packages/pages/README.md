@@ -10,6 +10,17 @@ Unreleased development package: the planned v0.1 behavior is implemented. The pu
 PHP 8.3+ (PHP 8.x), Laravel / Illuminate 13, and Composer 2 for development.
 No Livewire or database requirement.
 
+## Installation
+
+This package has not been published yet. Once a public release is available:
+
+```sh
+composer require wavykit/pages
+```
+
+Laravel discovers the service provider automatically. Register your application
+pages and menus as shown below; existing routes and controllers remain in place.
+
 ## Page definitions
 
 Laravel package discovery loads `WavyKit\Pages\Laravel\PagesServiceProvider`.
@@ -298,10 +309,22 @@ round trips. The suite is also checked against a lowest-installable dependency
 resolution. That older dependency set emits a Symfony Translation deprecation
 under PHP 8.5; diagnostics remain visible and are not suppressed.
 
-PHP 8.3 is the declared minimum and dependency-resolution platform;
-runtime verification currently uses PHP 8.5. PHP 8.3/8.4 runtime runs and a real
-consumer application trial remain before public release. No production readiness
-or framework-neutral compatibility is implied.
+The complete suite has passed on PHP 8.3.36, 8.4.26, and 8.5.12. PHP 8.3 remains
+the declared minimum and dependency-resolution platform. A separate Laravel 13 /
+Inertia 3 / React consumer trial has also passed its application checks, including
+cached-route behavior. These are observed checks, not an automated CI matrix or
+a production-readiness guarantee. Framework-neutral compatibility is not promised.
+
+## Versioning
+
+The initial release is intended to remain on 0.x while the public API is refined.
+Use minor releases for breaking changes during 0.x and patch releases for
+compatible fixes. At 1.0 and later, breaking public API changes require a major
+release. Git tags use `vMAJOR.MINOR.PATCH`; Composer derives versions from tags,
+so `composer.json` does not contain a version field.
+
+See [the changelog](CHANGELOG.md) for release changes. Tagging and publishing are
+separate from preparing or reviewing a release.
 
 This is a standalone Composer package with its own Git repository, dependencies,
 and checks. No workspace CLI is needed to develop or consume it.
