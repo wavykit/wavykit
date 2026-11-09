@@ -18,7 +18,7 @@ if the implementation or dependency constraints change.
 
 ## Repository and release preparation
 
-- [ ] Create the read-only `navigation` split repository on GitHub and grant the split token access when authorized (repository created on 2026-11-09; the token remains).
+- [ ] Create the read-only `navigation` split repository on GitHub and add it to the split GitHub App's installation when authorized (repository created on 2026-11-09; the app remains).
 - [ ] Confirm CI passes on GitHub and the split repository receives `main`.
 - [ ] Confirm the initial version and move Unreleased changes into a dated release entry.
 - [ ] Rebuild and inspect the final committed distribution.

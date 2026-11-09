@@ -105,8 +105,8 @@ manifest requires them.
 ## Adding a package
 
 1. Create `packages/<name>/` with the files listed under [Layout](#layout).
-2. Create the empty read-only repository `<owner>/<name>` and grant the split
-   token write access to it before the next push to `main`.
+2. Create the empty read-only repository `<owner>/<name>` and add it to the
+   split app's installation before the next push to `main`.
 3. In the root `composer.json`, add the package to the path repository's
    `versions` option at `0.1.x-dev` (the current development line) and to
    `require` as `^0.1@dev`. Add its test namespace to `autoload-dev`, and add
@@ -124,7 +124,33 @@ approval:
 1. Create the monorepo on GitHub as `<owner>/wavykit` and push `main`.
 2. Create a read-only repository `<owner>/<name>` for each package, without
    initial commits.
-3. Create a fine-grained token (or GitHub App) with contents write access to
-   the split repositories only, and store it as the `SPLIT_TOKEN` Actions
-   secret on the monorepo.
+3. Create the split GitHub App and store its credentials (see
+   [Split app](#split-app)).
 4. Register each split repository on Packagist when the package is published.
+
+### Split app
+
+The split workflow authenticates as a GitHub App, so no credential expires and
+nothing depends on a personal account. Each job mints a one-hour installation
+token limited to its own split repository, with `actions/create-github-app-token`.
+
+1. In the organization's settings, open Developer settings → GitHub Apps → New
+   GitHub App. Name it, for example, `WavyKit Split`. Use the monorepo URL as
+   the homepage, turn off the webhook, and allow installation only on this
+   account.
+2. Under repository permissions, grant **Contents: Read and write** and
+   **Workflows: Read and write**. Split repositories contain a workflow file,
+   so pushes need the second permission. Grant nothing else.
+3. Install the app on the organization with **Only select repositories**, and
+   choose the split repositories, not the monorepo.
+4. On the monorepo, add the app's **Client ID** as the Actions *variable*
+   `SPLIT_APP_CLIENT_ID`, and a generated private key as the Actions *secret*
+   `SPLIT_APP_PRIVATE_KEY`:
+
+   ```sh
+   gh variable set SPLIT_APP_CLIENT_ID --repo <owner>/wavykit --body <client-id>
+   gh secret set SPLIT_APP_PRIVATE_KEY --repo <owner>/wavykit < path/to/private-key.pem
+   ```
+
+   Then delete the downloaded `.pem` file. To rotate the key, generate a new
+   one, update the secret, and delete the old key in the app's settings.

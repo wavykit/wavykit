@@ -32,24 +32,42 @@ jobs:
       matrix:
         package: ${{ fromJSON(needs.packages.outputs.packages) }}
     steps:
+      - name: Check the split app configuration
+        env:
+          CLIENT_ID: ${{ vars.SPLIT_APP_CLIENT_ID }}
+          PRIVATE_KEY: ${{ secrets.SPLIT_APP_PRIVATE_KEY }}
+        run: |
+          if [ -z "$CLIENT_ID" ] || [ -z "$PRIVATE_KEY" ]; then
+            echo "::error::The SPLIT_APP_CLIENT_ID variable or SPLIT_APP_PRIVATE_KEY secret is not configured; see docs/monorepo.md."
+            exit 1
+          fi
+
+      # A one-hour installation token limited to this package's split repository.
+      - id: token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.SPLIT_APP_CLIENT_ID }}
+          private-key: ${{ secrets.SPLIT_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ matrix.package }}
+          permission-contents: write
+          permission-workflows: write
+
+      # Without persisted GITHUB_TOKEN credentials, the push uses the app token.
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Split and push to the read-only repository
         env:
-          SPLIT_TOKEN: ${{ secrets.SPLIT_TOKEN }}
+          SPLIT_TOKEN: ${{ steps.token.outputs.token }}
           PACKAGE: ${{ matrix.package }}
           OWNER: ${{ github.repository_owner }}
           REF_TYPE: ${{ github.ref_type }}
           REF_NAME: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-
-          if [ -z "$SPLIT_TOKEN" ]; then
-            echo "::error::SPLIT_TOKEN is not configured; see docs/monorepo.md."
-            exit 1
-          fi
 
           sha="$(git subtree split --prefix="packages/$PACKAGE" HEAD)"
 
