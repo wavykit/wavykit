@@ -72,3 +72,11 @@ These are candidates without a release target:
 
 Other components, such as an actions component, will be named and scoped when
 they are planned.
+
+## Not planned
+
+WavyKit is not building a content management system, an admin panel, a
+breadcrumbs-only package, or support for frameworks other than Laravel.
+Components describe an application's pages and leave routing, rendering, and
+authorization to the application. These are current decisions, and the
+maintainers may revisit them.
