@@ -6,16 +6,42 @@ its `illuminate/*` components.
 
 ## Layout
 
-Each package lives in `packages/<name>/` and is self-contained:
+Each package lives in `packages/<name>/` and contains:
 
-- its own `composer.json` (runtime `require` plus its own `require-dev`),
-  tests, Pint/PHPStan configuration, README, CHANGELOG, and LICENSE;
+- a runtime-only `composer.json`: `name`, `description`, `type`, `license`,
+  `require`, `autoload`, and `extra.laravel`, with no repositories, stability
+  settings, or development dependencies;
+- its tests and `tests/Pest.php`, plus `phpunit.xml`, `phpstan.neon`, and
+  `pint.json`, which use the root `vendor/`;
+- README, CHANGELOG, and LICENSE;
 - a `.gitattributes` that export-ignores development files from dist archives;
 - `.github/workflows/close-pull-request.yml`, which only runs in the split
   repository and redirects contributors here.
 
-There is no root `composer.json` and no shared install. Run checks inside each
-package with `composer install && composer check`.
+## Development install
+
+The root `composer.json` is `wavykit/monorepo`, a development-only manifest
+that is never published. It installs every package from `packages/*` through
+a path repository, at version `0.1.x-dev`. It also holds the development
+dependencies, test autoloading, scripts, and the PHP 8.3 resolution platform.
+`composer.lock` is local and ignored.
+
+```sh
+composer install
+composer check            # every package
+composer check pages      # one package
+composer format [package] # apply Pint
+```
+
+[`bin/check`](../bin/check) validates the root manifest and runs
+`monorepo-builder validate`, so packages cannot require shared dependencies
+with different constraints. Then, for each package, it validates the package
+manifest and runs Pint, PHPStan, and Pest with that package's configuration.
+Pint and PHPStan run in the package directory. Pest runs from the root,
+because it resolves its root from the `vendor/` location. monorepo-builder
+comes from `monorepo-php/monorepo`, its prefixed build. Its `merge` command is
+not used: path repositories already install each package with its own
+`require`.
 
 ## Naming
 
@@ -61,20 +87,22 @@ start releasing on different schedules.
 
 ## Continuous integration
 
-The [tests workflow](../.github/workflows/tests.yml) runs `composer check` in
-every package on PHP 8.3, 8.4, and 8.5, with lowest and stable dependency
-resolutions. New packages are discovered automatically.
+The [tests workflow](../.github/workflows/tests.yml) installs from the root and
+runs `composer check` on PHP 8.3, 8.4, and 8.5, with lowest and stable
+dependency resolutions. New packages are checked automatically once the root
+manifest requires them.
 
 ## Adding a package
 
 1. Create `packages/<name>/` with the files listed under [Layout](#layout).
 2. Create the empty read-only repository `<owner>/<name>` and grant the split
    token write access to it before the next push to `main`.
-3. If the package depends on another WavyKit package, add a `path` repository
-   pointing at `../<dependency>` to the dependent package's `composer.json` so
-   development uses the local copy. Consider `symplify/monorepo-builder` for
-   dependency-version validation once several packages depend on each other.
-4. Add the package to the Development section of the root README.
+3. In the root `composer.json`, add the package to the path repository's
+   `versions` option and to `require` at `0.1.x-dev` (the current development
+   line). Add its test namespace to `autoload-dev`.
+4. If the package depends on another WavyKit package, require it with a normal
+   constraint such as `^0.1`. The root path repository supplies the local copy.
+5. Add the package to the root README.
 
 ## One-time setup
 

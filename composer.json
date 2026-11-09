@@ -1,0 +1,50 @@
+{
+    "name": "wavykit/monorepo",
+    "description": "Development install for the WavyKit monorepo. Not published.",
+    "type": "project",
+    "license": "MIT",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "packages/*",
+            "options": {
+                "versions": {
+                    "wavykit/pages": "0.1.x-dev"
+                }
+            }
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "wavykit/pages": "0.1.x-dev"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.27",
+        "monorepo-php/monorepo": "^12.7",
+        "orchestra/testbench": "^11.0",
+        "pestphp/pest": "^4.0",
+        "phpstan/phpstan": "^2.1"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "WavyKit\\Pages\\Tests\\": "packages/pages/tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "platform": {
+            "php": "8.3.0"
+        },
+        "sort-packages": true
+    },
+    "scripts": {
+        "check": "bin/check",
+        "format": "bin/format"
+    },
+    "scripts-descriptions": {
+        "check": "Validate manifests, then run Pint, PHPStan, and Pest in each package (pass package names to limit).",
+        "format": "Apply Pint formatting in each package (pass package names to limit)."
+    }
+}

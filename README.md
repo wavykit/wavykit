@@ -6,18 +6,17 @@ unreleased page registry for breadcrumbs and navigation.
 
 ## Development
 
-Each package owns its Composer dependencies, documentation, and checks. For
-Pages, see its [development instructions](packages/pages/README.md#development):
+Development runs from this root. One install links every package from
+`packages/*`, and each package keeps its own runtime dependencies,
+documentation, and tool configuration:
 
 ```sh
-cd packages/pages
 composer install
-composer check
+composer check        # or: composer check pages
 ```
 
-There is no shared installation. Packages are released together with lockstep
-`vX.Y.Z` tags and distributed through read-only split repositories; CI runs
-every package's checks. See [Monorepo layout and releases](docs/monorepo.md)
+Packages are released together with lockstep `vX.Y.Z` tags and distributed
+through read-only split repositories; CI runs every package's checks. See [Monorepo layout and releases](docs/monorepo.md)
 for the layout, release workflow, and the one-time setup that remains. No
 remote, split repository, or publication exists yet.
 

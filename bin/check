@@ -1,0 +1,24 @@
+#!/bin/sh
+# Validates the manifests, then runs Pint, PHPStan, and Pest in each package
+# using the root install. Pass package names to limit the package checks.
+set -eu
+
+root="$(cd "$(dirname "$0")/.." && pwd)"
+bin="$root/vendor/bin"
+packages="$("$root/bin/packages" "$@")"
+
+cd "$root"
+composer validate --strict --no-check-lock --no-check-publish
+"$bin/monorepo-builder" validate
+
+for package in $packages; do
+    echo
+    echo "==> $package"
+    cd "$root/packages/$package"
+    composer validate --strict
+    "$bin/pint" --test
+    "$bin/phpstan" analyse --memory-limit=512M --no-progress
+    # Pest resolves its root from the vendor directory, so run it from the root.
+    (cd "$root" && "$bin/pest" --configuration="packages/$package/phpunit.xml" \
+        --test-directory="packages/$package/tests")
+done

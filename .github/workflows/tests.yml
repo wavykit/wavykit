@@ -9,29 +9,14 @@ permissions:
   contents: read
 
 jobs:
-  packages:
-    name: List packages
-    runs-on: ubuntu-latest
-    outputs:
-      packages: ${{ steps.list.outputs.packages }}
-    steps:
-      - uses: actions/checkout@v7
-      - id: list
-        run: echo "packages=$(find packages -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
-
   test:
-    name: ${{ matrix.package }} / PHP ${{ matrix.php }} / ${{ matrix.stability }}
-    needs: packages
+    name: PHP ${{ matrix.php }} / ${{ matrix.stability }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        package: ${{ fromJSON(needs.packages.outputs.packages) }}
         php: ['8.3', '8.4', '8.5']
         stability: [prefer-lowest, prefer-stable]
-    defaults:
-      run:
-        working-directory: packages/${{ matrix.package }}
     steps:
       - uses: actions/checkout@v7
 
@@ -43,5 +28,5 @@ jobs:
       - name: Install dependencies
         run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction --no-progress
 
-      - name: Run package checks
+      - name: Run checks
         run: composer check

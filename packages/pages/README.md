@@ -276,15 +276,21 @@ request snapshots and should not be stored on application singletons.
 
 ## Development
 
+Pages is developed from the WavyKit monorepo root, which installs the
+development tools once and links this package through a path repository:
+
 ```sh
 composer install
-composer check
+composer check pages
 ```
 
-`composer check` validates metadata/lockfile, checks Pint formatting, runs PHPStan
-at maximum level on source, and executes Pest unit and Testbench integration tests.
-`composer format` applies formatting. `composer.lock` is local and ignored; fresh
-checkouts resolve dependencies within the declared constraints. No CI workflow is installed.
+The package keeps its own `phpunit.xml`, `phpstan.neon`, and `pint.json`.
+`composer check pages` validates this manifest, checks Pint formatting, runs
+PHPStan at maximum level on source, and executes Pest unit and Testbench
+integration tests. `composer format pages` applies formatting. The root
+`composer.lock` is local and ignored; fresh checkouts resolve dependencies
+within the declared constraints. Monorepo CI runs the checks on PHP 8.3–8.5
+with lowest and stable resolutions.
 
 ## Route caching
 

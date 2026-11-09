@@ -1,0 +1,10 @@
+#!/bin/sh
+# Applies each package's Pint configuration. Pass package names to limit.
+set -eu
+
+root="$(cd "$(dirname "$0")/.." && pwd)"
+packages="$("$root/bin/packages" "$@")"
+
+for package in $packages; do
+    (cd "$root/packages/$package" && "$root/vendor/bin/pint")
+done

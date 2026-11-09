@@ -1,0 +1,20 @@
+#!/bin/sh
+# Prints the package names to act on: the arguments, or every packages/* folder.
+set -eu
+
+root="$(cd "$(dirname "$0")/.." && pwd)"
+
+if [ "$#" -eq 0 ]; then
+    for dir in "$root"/packages/*/; do
+        basename "$dir"
+    done
+    exit
+fi
+
+for package in "$@"; do
+    if [ ! -f "$root/packages/$package/composer.json" ]; then
+        echo "Unknown package: $package" >&2
+        exit 1
+    fi
+    echo "$package"
+done

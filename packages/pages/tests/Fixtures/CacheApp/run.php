@@ -6,7 +6,7 @@ use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Http\Request;
 
-require dirname(__DIR__, 3).'/vendor/autoload.php';
+require dirname(__DIR__, 5).'/vendor/autoload.php';
 
 $app = require $argv[2].'/bootstrap/app.php';
 if ($argv[1] === 'cache') {
