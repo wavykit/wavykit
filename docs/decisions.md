@@ -39,8 +39,15 @@ widening support means adding those versions to CI.
 ### v0.1
 
 The first release, `v0.1.0`, publishes Pages and Navigation together with the
-behavior they have today. Its preparation is tracked in each package's
-release checklist.
+behavior they have today, after an API review. The review decides every public
+class, method, and output shape deliberately, such as making breadcrumbs and
+menu items the same kind of object, so that the release marks an API the
+maintainers intend to keep. Releases stay on 0.x, and changes remain possible
+but intentional. Release preparation is tracked in each package's release
+checklist.
+
+Pull requests are limited to maintainers until the API is settled; issues and
+feedback are open.
 
 ### v0.2
 

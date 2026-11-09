@@ -1,8 +1,14 @@
 # Contributing to WavyKit
 
+**WavyKit is not accepting pull requests yet.** The public API is still being
+finalized before the first release, so pull requests are limited to
+maintainers for now. Feedback is welcome: please open an issue on this
+repository with questions, bug reports, or how you would use the packages.
+This section will change when contributions open.
+
 WavyKit is developed in this monorepo. Each package in `packages/` is published
 through a read-only split repository, which closes pull requests automatically;
-open issues and pull requests here instead.
+open issues here instead.
 
 ## Development
 
@@ -21,6 +27,8 @@ checks on PHP 8.3, 8.4, and 8.5 with lowest and stable dependency resolutions.
 See [docs/monorepo.md](docs/monorepo.md) for the layout and release process.
 
 ## Pull requests
+
+These rules apply to maintainers now, and to everyone once contributions open.
 
 - Keep each pull request to one change, with tests for behavior changes.
 - Keep formatting separate from behavior changes.
