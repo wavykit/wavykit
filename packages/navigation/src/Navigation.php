@@ -2,24 +2,27 @@
 
 declare(strict_types=1);
 
-namespace WavyKit\Pages;
+namespace WavyKit\Navigation;
 
 use Closure;
 use LogicException;
 use Throwable;
+use WavyKit\Pages\PageContext;
+use WavyKit\Pages\PageDefinition;
+use WavyKit\Pages\PageRegistry;
+use WavyKit\Pages\Pages;
 
 /**
- * Resolves named menus into presentation data for the current request.
+ * Resolves named menus for the current Laravel request; does not enforce access.
  *
  * Page labels, URLs, context, and active ancestry come from the Pages resolver.
- *
- * @internal Backs Pages::navigation() until menus move to wavykit/navigation.
  */
 final readonly class Navigation
 {
     public function __construct(
         private Pages $pages,
         private PageRegistry $registry,
+        private MenuRegistry $menus,
     ) {}
 
     /**
@@ -27,9 +30,9 @@ final readonly class Navigation
      *
      * Current marks the exact page; active also marks page ancestors and explicit
      * menu parents with active visible children. Unregistered routes have no active
-     * items. Callbacks may run repeatedly; output is not cached on the registry.
+     * items. Callbacks may run repeatedly; output is not cached on the registries.
      *
-     * @return list<NavigationItem>
+     * @return list<MenuItem>
      *
      * @throws LogicException If the menu, definitions, callbacks, or destination URLs are invalid.
      */
@@ -38,32 +41,33 @@ final readonly class Navigation
         $context = $this->pages->context();
         $activeIds = array_map(fn (PageDefinition $page): string => $page->id, $this->pages->activeTrail($context));
 
-        $entries = $this->registry->menuEntries($name);
+        $entries = $this->menus->entries($name);
 
         return $entries === null
-            ? $this->items($this->registry->menuRoots($name), $context, $activeIds)
+            ? $this->items($this->menus->roots($name), array_flip($this->menus->exclusions($name)), $context, $activeIds)
             : $this->explicitItems($name, $entries, $context, $activeIds);
     }
 
     /**
      * @param  list<PageDefinition>  $pages
+     * @param  array<string, int>  $excluded  Page IDs as keys.
      * @param  list<string>  $activeIds
-     * @return list<NavigationItem>
+     * @return list<MenuItem>
      */
-    private function items(array $pages, PageContext $context, array $activeIds): array
+    private function items(array $pages, array $excluded, PageContext $context, array $activeIds): array
     {
         $items = [];
         foreach ($pages as $page) {
-            if (! $page->navigationVisible) {
+            if (isset($excluded[$page->id])) {
                 continue;
             }
-            $items[] = new NavigationItem(
+            $items[] = new MenuItem(
                 $page->id,
                 $this->pages->label($page, $context),
                 $this->pages->url($page, $context),
                 $page->id === $context->page?->id,
                 in_array($page->id, $activeIds, true),
-                $this->items($this->registry->children($page->id), $context, $activeIds),
+                $this->items($this->registry->children($page->id), $excluded, $context, $activeIds),
                 $page->icon,
             );
         }
@@ -74,7 +78,7 @@ final readonly class Navigation
     /**
      * @param  list<MenuDefinition>  $entries
      * @param  list<string>  $activeIds
-     * @return list<NavigationItem>
+     * @return list<MenuItem>
      */
     private function explicitItems(string $name, array $entries, PageContext $context, array $activeIds): array
     {
@@ -109,7 +113,7 @@ final readonly class Navigation
                 $activeChild = $activeChild || $child->active;
             }
 
-            $items[] = new NavigationItem(
+            $items[] = new MenuItem(
                 $page?->id,
                 $label,
                 $page === null ? null : $this->pages->url($page, $context),

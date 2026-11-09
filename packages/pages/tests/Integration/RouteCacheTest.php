@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 
-test('real route cache round trips preserve bound labels menus and user isolation in fresh processes', function () {
+test('real route cache round trips preserve bound labels and request isolation in fresh processes', function () {
     $base = sys_get_temp_dir().'/wavykit-pages-'.bin2hex(random_bytes(8));
     $files = new Filesystem;
     $files->makeDirectory($base.'/bootstrap/cache', 0755, true);
@@ -36,10 +36,10 @@ test('real route cache round trips preserve bound labels menus and user isolatio
             ->and($before['responses'][0]['status'])->toBe(200)
             ->and($before['responses'][0]['data']['breadcrumbs'][1]['label'])->toBe('Apollo')
             ->and($before['responses'][0]['data']['breadcrumbs'][1]['url'])->toBe('http://localhost/projects/42')
-            ->and($before['responses'][0]['data']['footer'][0]['children'][0]['label'])->toBe('All projects')
+            ->and($before['responses'][0]['data']['user'])->toBe('alice')
             ->and($before['responses'][1]['status'])->toBe(200)
             ->and($before['responses'][1]['data']['breadcrumbs'][1]['label'])->toBe('Artemis')
-            ->and($before['responses'][1]['data']['footer'])->toBe([]);
+            ->and($before['responses'][1]['data']['user'])->toBeNull();
 
         $files->delete($base.'/label-calls');
         expect($run('cache'))->toBe(['cached' => true])

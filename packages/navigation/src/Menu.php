@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace WavyKit\Pages;
+namespace WavyKit\Navigation;
 
 use Closure;
+use WavyKit\Pages\PageContext;
 
 /** A menu placement references a page, or groups other placements. */
 final class Menu

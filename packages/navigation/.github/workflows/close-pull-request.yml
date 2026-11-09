@@ -1,0 +1,18 @@
+name: Close Pull Request
+
+# Runs only in the read-only split repository, where this folder is the root.
+
+on:
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: superbrothers/close-pull-request@v3
+        with:
+          comment: "Thank you for your pull request. This repository is a read-only split of the WavyKit monorepo. Please submit your pull request to https://github.com/${{ github.repository_owner }}/wavykit instead.<br><br>Thanks!"

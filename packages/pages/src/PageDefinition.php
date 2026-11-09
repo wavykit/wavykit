@@ -19,7 +19,6 @@ final readonly class PageDefinition
         public ?string $routeName,
         public ?string $parentId,
         public int $order,
-        public bool $navigationVisible,
         public ?Closure $parameters = null,
         public ?string $icon = null,
     ) {}

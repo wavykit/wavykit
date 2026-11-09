@@ -12,14 +12,7 @@ final class PageRegistry
     /** @var array<string, PageDefinition> */
     private array $definitions = [];
 
-    private readonly MenuRegistry $menus;
-
     private bool $finalized = false;
-
-    public function __construct()
-    {
-        $this->menus = new MenuRegistry;
-    }
 
     /**
      * Snapshot declarations without resolving labels, URLs, or visibility.
@@ -41,40 +34,12 @@ final class PageRegistry
     }
 
     /**
-     * Declare a named menu following the selected page subtrees.
-     *
-     * Root IDs retain supplied order; descendants use sibling order. Overlapping
-     * roots are rejected at finalization, even if hidden from navigation.
-     *
-     * @throws LogicException If finalized, or the menu name is empty or already used.
-     */
-    public function deriveMenu(string $name, string ...$roots): void
-    {
-        $this->assertMutable();
-        $this->menus->derive($name, ...$roots);
-    }
-
-    /**
-     * Snapshot an independently arranged menu referencing registered pages.
-     *
-     * Only declared children appear; page visibility defaults do not apply. Names
-     * are shared with derived menus. Page and group duplicates are checked on read.
-     *
-     * @throws LogicException If finalized, or menu names or placement structures are invalid.
-     */
-    public function defineMenu(string $name, Menu ...$entries): void
-    {
-        $this->assertMutable();
-        $this->menus->define($name, ...$entries);
-    }
-
-    /**
      * Validate references and freeze registrations; repeated calls are harmless.
      *
      * All public registry reads invoke this automatically. Laravel route existence
      * is checked separately when resolving output through Pages.
      *
-     * @throws LogicException For missing or cyclic parents, duplicate route associations, or invalid menus.
+     * @throws LogicException For missing or cyclic parents or duplicate route associations.
      */
     public function finalize(): void
     {
@@ -93,7 +58,6 @@ final class PageRegistry
             $this->walk($page);
         }
 
-        $this->menus->validate($this->definitions);
         $this->finalized = true;
     }
 
@@ -140,7 +104,7 @@ final class PageRegistry
     }
 
     /**
-     * Read the complete page ancestry, including route-less or navigation-hidden pages.
+     * Read the complete page ancestry, including route-less pages.
      *
      * @return list<PageDefinition> Root first, including the requested page.
      *
@@ -168,34 +132,6 @@ final class PageRegistry
         return $pages;
     }
 
-    /**
-     * Read a derived menu's roots in their declared order.
-     *
-     * @return list<PageDefinition>
-     *
-     * @throws LogicException If the name is not a derived menu or finalization fails.
-     */
-    public function menuRoots(string $name): array
-    {
-        $this->finalize();
-
-        return array_map(fn (string $id): PageDefinition => $this->lookup($id), $this->menus->roots($name));
-    }
-
-    /**
-     * Read explicit placements without resolving request-dependent values.
-     *
-     * @return list<MenuDefinition>|null Null selects a hierarchy-derived menu; an empty list is an empty explicit menu.
-     *
-     * @throws LogicException If the menu is unknown or registry finalization fails.
-     */
-    public function menuEntries(string $name): ?array
-    {
-        $this->finalize();
-
-        return $this->menus->entries($name);
-    }
-
     /** @param array<string, PageDefinition> $pending */
     private function collect(Page $page, ?string $nestedParent, array &$pending): void
     {
@@ -208,7 +144,7 @@ final class PageRegistry
         if ($page->routeName !== null && trim($page->routeName) === '') {
             throw new LogicException("Page '{$page->id}' has an empty route name.");
         }
-        $pending[$page->id] = new PageDefinition($page->id, $page->label, $page->routeName, $nestedParent ?? $page->parentId, $page->sortOrder, $page->inNavigation, $page->routeParameters, $page->navigationIcon);
+        $pending[$page->id] = new PageDefinition($page->id, $page->label, $page->routeName, $nestedParent ?? $page->parentId, $page->sortOrder, $page->routeParameters, $page->navigationIcon);
         foreach ($page->childPages as $child) {
             $this->collect($child, $page->id, $pending);
         }
@@ -240,7 +176,7 @@ final class PageRegistry
     private function assertMutable(): void
     {
         if ($this->finalized) {
-            throw new LogicException('Page definitions and menus must be registered before the registry is resolved.');
+            throw new LogicException('Page definitions must be registered before the registry is resolved.');
         }
     }
 }

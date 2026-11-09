@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace WavyKit\Pages;
+namespace WavyKit\Navigation;
 
 use Closure;
+use WavyKit\Pages\PageContext;
 
 /** Immutable placement snapshot; group IDs identify presentation, page IDs reference definitions. */
 final readonly class MenuDefinition

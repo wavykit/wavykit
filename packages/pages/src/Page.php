@@ -21,8 +21,6 @@ final class Page
 
     public int $sortOrder = 0;
 
-    public bool $inNavigation = true;
-
     public ?string $navigationIcon = null;
 
     /** @var list<Page> */
@@ -44,7 +42,7 @@ final class Page
     }
 
     /**
-     * Set the shared breadcrumb and navigation label.
+     * Set the label shared by breadcrumbs and any menus that place this page.
      *
      * Callbacks must return strings and may run repeatedly when output is requested.
      * Use the supplied active-request context rather than capturing request data.
@@ -100,24 +98,10 @@ final class Page
 
     /**
      * Set ascending sibling order; ties preserve registration order.
-     *
-     * Derived menu roots retain the order supplied to deriveMenu().
      */
     public function order(int $order): self
     {
         $this->sortOrder = $order;
-
-        return $this;
-    }
-
-    /**
-     * Include this subtree in derived menus; breadcrumbs are unaffected.
-     *
-     * Explicit menu placements ignore this flag. This does not authorize requests.
-     */
-    public function navigationVisible(bool $visible): self
-    {
-        $this->inNavigation = $visible;
 
         return $this;
     }

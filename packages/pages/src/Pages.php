@@ -86,22 +86,6 @@ final readonly class Pages
     }
 
     /**
-     * Resolve a named menu into presentation data for this request.
-     *
-     * Current marks the exact page; active also marks page ancestors and explicit
-     * menu parents with active visible children. Unregistered routes have no active
-     * items. Callbacks may run repeatedly; output is not cached on the registry.
-     *
-     * @return list<NavigationItem>
-     *
-     * @throws LogicException If the menu, definitions, callbacks, or destination URLs are invalid.
-     */
-    public function navigation(string $name): array
-    {
-        return (new Navigation($this, $this->registry))->menu($name);
-    }
-
-    /**
      * Read the active page's ancestry, root first; empty when no page is active.
      *
      * @return list<PageDefinition>

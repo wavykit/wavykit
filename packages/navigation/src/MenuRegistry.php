@@ -2,61 +2,94 @@
 
 declare(strict_types=1);
 
-namespace WavyKit\Pages;
+namespace WavyKit\Navigation;
 
 use LogicException;
+use WavyKit\Pages\PageDefinition;
+use WavyKit\Pages\PageRegistry;
 
-/**
- * Named menu declarations: hierarchy-derived roots and explicit placements.
- *
- * Holds declarations only; validation receives the finalized page definitions.
- *
- * @internal Owned by PageRegistry until menus move to wavykit/navigation.
- */
+/** Named menu declarations shared across requests; contains no resolved user or resource output. */
 final class MenuRegistry
 {
     /** @var array<string, list<string>> */
     private array $derived = [];
 
+    /** @var array<string, DerivedMenu> */
+    private array $derivedMenus = [];
+
+    /** @var array<string, list<string>> */
+    private array $exclusions = [];
+
     /** @var array<string, list<MenuDefinition>> */
     private array $defined = [];
 
+    private bool $finalized = false;
+
+    public function __construct(private readonly PageRegistry $pages) {}
+
     /**
-     * Declare a menu following the selected page subtrees, in the supplied order.
+     * Declare a menu following the selected page subtrees.
      *
-     * @throws LogicException If the menu name is empty or already used.
+     * Root IDs retain supplied order; descendants use page sibling order.
+     * Overlapping roots are rejected at finalization, even when excluded.
+     *
+     * @throws LogicException If finalized, or the menu name is empty or already used.
      */
-    public function derive(string $name, string ...$roots): void
+    public function derive(string $name, string ...$roots): DerivedMenu
     {
+        $this->assertMutable();
         $this->assertName($name);
         $this->derived[$name] = array_values($roots);
+
+        return $this->derivedMenus[$name] = new DerivedMenu($this->assertMutable(...));
     }
 
     /**
-     * Snapshot an independently arranged menu; a failed snapshot registers nothing.
+     * Snapshot an independently arranged menu referencing registered pages.
      *
-     * @throws LogicException If the menu name is empty or already used, or an entry is invalid.
+     * Only declared children appear; derived-menu exclusions do not apply. Names
+     * are shared with derived menus. A failed snapshot registers nothing.
+     *
+     * @throws LogicException If finalized, or menu names or placement structures are invalid.
      */
     public function define(string $name, Menu ...$entries): void
     {
+        $this->assertMutable();
         $this->assertName($name);
         $this->defined[$name] = array_map(fn (Menu $entry): MenuDefinition => $this->snapshot($entry, []), array_values($entries));
     }
 
     /**
-     * Check page references and duplicate placements, including hidden branches.
+     * Validate page references against the finalized page registry and freeze menus.
      *
-     * @param  array<string, PageDefinition>  $pages  Finalized definitions keyed by ID, in registration order.
+     * All registry reads invoke this automatically; repeated calls are harmless.
+     * A failed validation leaves menus open for correction.
      *
-     * @throws LogicException For unknown pages or duplicate page or group placements.
+     * @throws LogicException For invalid pages, unknown page references, or duplicate placements.
      */
-    public function validate(array $pages): void
+    public function finalize(): void
     {
+        if ($this->finalized) {
+            return;
+        }
+
+        $pages = [];
+        foreach ($this->pages->all() as $page) {
+            $pages[$page->id] = $page;
+        }
+
+        $exclusions = [];
         foreach ($this->derived as $name => $roots) {
             $seen = [];
             foreach ($roots as $id) {
-                $page = $pages[$id] ?? throw new LogicException("Unknown page '{$id}'.");
+                $page = $pages[$id] ?? throw new LogicException("Menu '{$name}' references unknown page '{$id}'.");
                 $this->validateBranch($name, $page, $pages, $seen);
+            }
+            $exclusions[$name] = $this->derivedMenus[$name]->exclusions();
+            foreach ($exclusions[$name] as $id) {
+                if (! isset($pages[$id])) {
+                    throw new LogicException("Menu '{$name}' excludes unknown page '{$id}'.");
+                }
             }
         }
         foreach ($this->defined as $name => $entries) {
@@ -64,22 +97,40 @@ final class MenuRegistry
             $seenGroups = [];
             $this->validateEntries($name, $entries, $pages, $seenPages, $seenGroups);
         }
+
+        $this->exclusions = $exclusions;
+        $this->finalized = true;
     }
 
     /**
-     * Read a derived menu's root page IDs in their declared order.
+     * Read a derived menu's roots in their declared order.
      *
-     * @return list<string>
+     * @return list<PageDefinition>
      *
-     * @throws LogicException If the name is not a derived menu.
+     * @throws LogicException If the name is not a derived menu or finalization fails.
      */
     public function roots(string $name): array
     {
+        $this->finalize();
         if (! array_key_exists($name, $this->derived)) {
             throw new LogicException("Unknown menu '{$name}'.");
         }
 
-        return $this->derived[$name];
+        return array_map(fn (string $id): PageDefinition => $this->pages->page($id), $this->derived[$name]);
+    }
+
+    /**
+     * Read the page IDs a derived menu omits, with their subtrees.
+     *
+     * @return list<string>
+     *
+     * @throws LogicException If the name is not a derived menu or finalization fails.
+     */
+    public function exclusions(string $name): array
+    {
+        $this->finalize();
+
+        return $this->exclusions[$name] ?? throw new LogicException("Unknown menu '{$name}'.");
     }
 
     /**
@@ -87,10 +138,11 @@ final class MenuRegistry
      *
      * @return list<MenuDefinition>|null Null selects a hierarchy-derived menu; an empty list is an empty explicit menu.
      *
-     * @throws LogicException If the menu is unknown.
+     * @throws LogicException If the menu is unknown or finalization fails.
      */
     public function entries(string $name): ?array
     {
+        $this->finalize();
         if (array_key_exists($name, $this->defined)) {
             return $this->defined[$name];
         }
@@ -99,6 +151,13 @@ final class MenuRegistry
         }
 
         return null;
+    }
+
+    private function assertMutable(): void
+    {
+        if ($this->finalized) {
+            throw new LogicException('Menus must be registered before the menu registry is resolved.');
+        }
     }
 
     private function assertName(string $name): void

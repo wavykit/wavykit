@@ -9,6 +9,7 @@
             "url": "packages/*",
             "options": {
                 "versions": {
+                    "wavykit/navigation": "0.1.x-dev",
                     "wavykit/pages": "0.1.x-dev"
                 }
             }
@@ -16,7 +17,8 @@
     ],
     "require": {
         "php": "^8.3",
-        "wavykit/pages": "0.1.x-dev"
+        "wavykit/navigation": "^0.1@dev",
+        "wavykit/pages": "^0.1@dev"
     },
     "require-dev": {
         "laravel/pint": "^1.27",
@@ -27,6 +29,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "WavyKit\\Navigation\\Tests\\": "packages/navigation/tests/",
             "WavyKit\\Pages\\Tests\\": "packages/pages/tests/"
         }
     },

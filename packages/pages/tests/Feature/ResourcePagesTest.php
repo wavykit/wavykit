@@ -18,7 +18,7 @@ beforeEach(function () {
     Route::get('/projects', fn () => 'projects')->name('projects.index');
     Route::get('/projects/{project}', fn () => 'details')->name('projects.show');
     Route::get('/projects/{project}/edit/{tab?}', function (Pages $pages) {
-        return ['breadcrumbs' => $pages->breadcrumbs(), 'menu' => $pages->navigation('primary')];
+        return ['breadcrumbs' => $pages->breadcrumbs()];
     })->middleware(SubstituteBindings::class)->name('projects.edit');
 
     app(PageRegistry::class)->register(
@@ -32,12 +32,11 @@ beforeEach(function () {
 
                     return $project->name;
                 })
-                ->navigationVisible(false)->children(
-                    Page::make('projects.edit')->route('projects.edit')->label('Edit')->navigationVisible(false),
+                ->children(
+                    Page::make('projects.edit')->route('projects.edit')->label('Edit'),
                 ),
         ),
     );
-    app(PageRegistry::class)->deriveMenu('primary', 'projects');
 });
 
 test('bound resource labels and ancestor URLs remain isolated across requests', function () {
@@ -46,9 +45,7 @@ test('bound resource labels and ancestor URLs remain isolated across requests', 
         ->assertJsonPath('breadcrumbs.1.label', 'Apollo')
         ->assertJsonPath('breadcrumbs.1.url', 'http://localhost/projects/42')
         ->assertJsonPath('breadcrumbs.2.label', 'Edit')
-        ->assertJsonPath('breadcrumbs.2.url', null)
-        ->assertJsonPath('menu.0.active', true)
-        ->assertJsonPath('menu.0.children', []);
+        ->assertJsonPath('breadcrumbs.2.url', null);
 
     $this->getJson('/projects/77/edit')->assertOk()
         ->assertJsonPath('breadcrumbs.1.label', 'Artemis')
@@ -71,15 +68,6 @@ test('ancestor callbacks see the active page rather than the ancestor being rend
     expect($seen)->toBe([]);
     $this->getJson('/context')->assertOk();
     expect($seen)->toBe(['context.child']);
-});
-
-test('hidden resource branches are not evaluated when rendering global navigation', function () {
-    Route::get('/global-menu', fn (Pages $pages) => $pages->navigation('primary'))->name('global.menu');
-
-    $this->getJson('/global-menu')->assertOk()
-        ->assertJsonPath('0.label', 'Projects')
-        ->assertJsonPath('0.active', false)
-        ->assertJsonPath('0.children', []);
 });
 
 test('explicit parameter mapping supports differently named child parameters', function () {

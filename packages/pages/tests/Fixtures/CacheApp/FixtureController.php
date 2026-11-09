@@ -23,8 +23,7 @@ final class FixtureController
         return [
             'pageId' => $pages->page()?->id,
             'breadcrumbs' => $pages->breadcrumbs(),
-            'primary' => $pages->navigation('primary'),
-            'footer' => $pages->navigation('footer'),
+            'user' => $pages->context()->user?->getAuthIdentifier(),
         ];
     }
 }

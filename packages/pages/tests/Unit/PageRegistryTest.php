@@ -50,27 +50,15 @@ test('nested and explicit conflicting parents are rejected', function () {
         ->toThrow(LogicException::class, 'conflicting parents');
 });
 
-test('duplicate derived placements and unknown menu roots fail', function () {
-    $registry = new PageRegistry;
-    $registry->register(Page::make('root')->children(Page::make('child')));
-    $registry->deriveMenu('primary', 'root', 'child');
-    expect(fn () => $registry->finalize())->toThrow(LogicException::class, 'more than once');
-
-    $other = new PageRegistry;
-    $other->deriveMenu('footer', 'missing');
-    expect(fn () => $other->finalize())->toThrow(LogicException::class, "Unknown page 'missing'");
-});
-
 test('finalization rejects later registration', function () {
     $registry = new PageRegistry;
     $registry->finalize();
     expect(fn () => $registry->register(Page::make('late')))->toThrow(LogicException::class, 'before the registry is resolved');
 });
 
-test('derived roots retain authored order and siblings retain order on ties', function () {
+test('roots and siblings retain registration order on ties', function () {
     $registry = new PageRegistry;
     $registry->register(Page::make('a')->children(Page::make('first'), Page::make('second')), Page::make('b'));
-    $registry->deriveMenu('primary', 'b', 'a');
-    expect(array_column($registry->menuRoots('primary'), 'id'))->toBe(['b', 'a'])
+    expect(array_column($registry->children(null), 'id'))->toBe(['a', 'b'])
         ->and(array_column($registry->children('a'), 'id'))->toBe(['first', 'second']);
 });

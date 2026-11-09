@@ -13,10 +13,10 @@ beforeEach(function () {
     Route::get('/dashboard', fn () => 'dashboard')->name('dashboard');
     Route::get('/projects', fn () => 'projects')->name('projects.index');
     Route::get('/projects/create', function (Pages $pages) {
-        return ['breadcrumbs' => $pages->breadcrumbs(), 'menu' => $pages->navigation('primary')];
+        return ['breadcrumbs' => $pages->breadcrumbs()];
     })->name('projects.create');
     Route::get('/other', function (Pages $pages) {
-        return ['page' => $pages->page(), 'breadcrumbs' => $pages->breadcrumbs(), 'menu' => $pages->navigation('primary')];
+        return ['page' => $pages->page(), 'breadcrumbs' => $pages->breadcrumbs()];
     })->name('other');
 
     $registry = app(PageRegistry::class);
@@ -26,26 +26,18 @@ beforeEach(function () {
             Page::make('projects.create')->label('Create project')->route('projects.create'),
         ),
     );
-    $registry->deriveMenu('primary', 'dashboard', 'projects');
 });
 
-test('existing Laravel routes produce breadcrumbs and a nested active menu', function () {
+test('existing Laravel routes produce breadcrumbs with a distinct current item', function () {
     $this->getJson('/projects/create')->assertOk()
         ->assertJsonPath('breadcrumbs.0', ['pageId' => 'projects', 'label' => 'Projects', 'url' => 'http://localhost/projects', 'current' => false])
-        ->assertJsonPath('breadcrumbs.1.current', true)
-        ->assertJsonPath('breadcrumbs.1.url', null)
-        ->assertJsonPath('menu.0.active', false)
-        ->assertJsonPath('menu.1.current', false)
-        ->assertJsonPath('menu.1.active', true)
-        ->assertJsonPath('menu.1.children.0.current', true);
+        ->assertJsonPath('breadcrumbs.1', ['pageId' => 'projects.create', 'label' => 'Create project', 'url' => null, 'current' => true]);
 });
 
-test('an unregistered route clears active state without removing global navigation', function () {
-    $this->getJson('/projects/create')->assertOk()->assertJsonPath('menu.1.active', true);
+test('an unregistered route has no page and empty breadcrumbs', function () {
+    $this->getJson('/projects/create')->assertOk()->assertJsonCount(2, 'breadcrumbs');
     $this->getJson('/other')->assertOk()->assertJsonPath('page', null)
-        ->assertJsonPath('breadcrumbs', [])
-        ->assertJsonPath('menu.1.active', false)
-        ->assertJsonPath('menu.1.children.0.current', false);
+        ->assertJsonPath('breadcrumbs', []);
 });
 
 test('a later unmatched request cannot reuse the previous route page context', function () {
@@ -55,30 +47,25 @@ test('a later unmatched request cannot reuse the previous route page context', f
         return response()->json([
             'page' => $pages->page(),
             'breadcrumbs' => $pages->breadcrumbs(),
-            'menu' => $pages->navigation('primary'),
         ], 404);
     });
     $this->getJson('/projects/create')->assertOk();
     $this->getJson('/does-not-exist')->assertNotFound()
         ->assertJsonPath('page', null)
-        ->assertJsonPath('breadcrumbs', [])
-        ->assertJsonPath('menu.1.active', false);
+        ->assertJsonPath('breadcrumbs', []);
 });
 
-test('route-less ancestors and hidden navigation subtrees retain breadcrumbs', function () {
+test('route-less ancestors stay in breadcrumbs without links', function () {
     app(PageRegistry::class)->register(Page::make('group')->label('Group')->children(
-        Page::make('hidden')->route('hidden')->navigationVisible(false)->children(Page::make('leaf')->route('leaf')),
+        Page::make('middle')->route('middle')->children(Page::make('leaf')->route('leaf')),
     ));
-    app(PageRegistry::class)->deriveMenu('grouped', 'group');
-    Route::get('/hidden', fn () => 'hidden')->name('hidden');
-    Route::get('/leaf', function (Pages $pages) {
-        return ['breadcrumbs' => $pages->breadcrumbs(), 'menu' => $pages->navigation('grouped')];
-    })->name('leaf');
+    Route::get('/middle', fn () => 'middle')->name('middle');
+    Route::get('/leaf', fn (Pages $pages) => ['breadcrumbs' => $pages->breadcrumbs()])->name('leaf');
 
     $this->getJson('/leaf')->assertOk()->assertJsonCount(3, 'breadcrumbs')
         ->assertJsonPath('breadcrumbs.0.url', null)
-        ->assertJsonPath('menu.0.children', [])
-        ->assertJsonPath('menu.0.active', true);
+        ->assertJsonPath('breadcrumbs.0.label', 'Group')
+        ->assertJsonPath('breadcrumbs.1.url', 'http://localhost/middle');
 });
 
 test('unknown associated routes identify the page and destination', function () {
