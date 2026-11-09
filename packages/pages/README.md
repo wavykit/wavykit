@@ -323,7 +323,8 @@ compatible fixes. At 1.0 and later, breaking public API changes require a major
 release. Git tags use `vMAJOR.MINOR.PATCH`; Composer derives versions from tags,
 so `composer.json` does not contain a version field.
 
-See [the changelog](CHANGELOG.md) for release changes. Tagging and publishing are
+See [the changelog](CHANGELOG.md) for release changes and the
+[first release checklist](docs/release-checklist.md) for remaining preparation. Tagging and publishing are
 separate from preparing or reviewing a release.
 
 This is a standalone Composer package with its own Git repository, dependencies,

@@ -7,7 +7,13 @@ namespace WavyKit\Pages;
 use Illuminate\Contracts\Auth\Authenticatable;
 use LogicException;
 
-/** A snapshot of the active page and the current request's bound parameters. */
+/**
+ * Request snapshot passed to all label, parameter, and visibility callbacks.
+ *
+ * Page is the active page, not necessarily the ancestor or menu entry being
+ * resolved. Page may be null on unregistered routes; user is null for guests.
+ * Bound objects are references, not deep copies; do not retain across requests.
+ */
 final readonly class PageContext
 {
     /** @param array<string, mixed> $parameters */
@@ -17,6 +23,11 @@ final readonly class PageContext
         public ?Authenticatable $user = null,
     ) {}
 
+    /**
+     * Read a named bound route value; a present null value is returned unchanged.
+     *
+     * @throws LogicException If the parameter name is absent.
+     */
     public function parameter(string $name): mixed
     {
         if (! array_key_exists($name, $this->parameters)) {
@@ -27,7 +38,11 @@ final readonly class PageContext
         return $this->parameters[$name];
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * Read all active-route parameters, including bound models after binding middleware.
+     *
+     * @return array<string, mixed>
+     */
     public function parameters(): array
     {
         return $this->parameters;

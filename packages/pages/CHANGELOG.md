@@ -18,6 +18,9 @@
 
 ### Developer Experience
 
+- Public API docblocks describe lifecycle, request callbacks, menu semantics, errors, and resolved output.
+- Track first-release readiness in a package-owned checklist.
+
 - Composer validation, Pint formatting, maximum-level PHPStan analysis, and Pest/Testbench tests.
 - Integration coverage for fresh-process route caching and resource/user request isolation.
 - Verified the complete suite on PHP 8.3, 8.4, and 8.5, plus a separate Laravel/Inertia consumer trial.

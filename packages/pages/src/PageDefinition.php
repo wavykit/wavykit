@@ -6,6 +6,7 @@ namespace WavyKit\Pages;
 
 use Closure;
 
+/** Immutable registration snapshot; callbacks remain unevaluated until output is requested. */
 final readonly class PageDefinition
 {
     /**

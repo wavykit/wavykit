@@ -17,6 +17,7 @@ use WavyKit\Pages\PageContext;
 use WavyKit\Pages\PageDefinition;
 use WavyKit\Pages\PageRegistry;
 
+/** Laravel request adapter for registered metadata; does not create routes or enforce access. */
 final readonly class Pages
 {
     public function __construct(
@@ -25,6 +26,14 @@ final readonly class Pages
         private UrlGenerator $urls,
     ) {}
 
+    /**
+     * Resolve the current request's exact named-route association.
+     *
+     * Returns null for unmatched or unregistered routes; callbacks remain unevaluated.
+     * Resolve after routes have loaded. This validates all registered route references.
+     *
+     * @throws LogicException If definitions or route references are invalid.
+     */
     public function page(): ?PageDefinition
     {
         $this->validateRoutes();
@@ -32,6 +41,14 @@ final readonly class Pages
         return $this->registry->forRoute($this->activeRoute()?->getName());
     }
 
+    /**
+     * Snapshot the active page, bound route parameters, and nullable current user.
+     *
+     * Resolve after binding middleware when callbacks require models. Do not retain
+     * the context across requests or on application singletons.
+     *
+     * @throws LogicException If definitions, route references, or the current user are invalid.
+     */
     public function context(): PageContext
     {
         $parameters = [];
@@ -50,7 +67,16 @@ final readonly class Pages
         return new PageContext($this->page(), $parameters, $user);
     }
 
-    /** @return list<array{pageId: string, label: string, url: ?string, current: bool}> */
+    /**
+     * Resolve root-first ancestry, including the current page and route-less parents.
+     *
+     * Returns an empty list for unregistered routes. Current and route-less entries
+     * have null URLs. All labels use the same active-request context.
+     *
+     * @return list<array{pageId: string, label: string, url: ?string, current: bool}>
+     *
+     * @throws LogicException If definitions, callbacks, or destination URLs cannot be resolved.
+     */
     public function breadcrumbs(): array
     {
         $context = $this->context();
@@ -67,7 +93,17 @@ final readonly class Pages
         ], $this->registry->trail($current->id));
     }
 
-    /** @return list<NavigationItem> */
+    /**
+     * Resolve a named menu into presentation data for this request.
+     *
+     * Current marks the exact page; active also marks page ancestors and explicit
+     * menu parents with active visible children. Unregistered routes have no active
+     * items. Callbacks may run repeatedly; output is not cached on the registry.
+     *
+     * @return list<NavigationItem>
+     *
+     * @throws LogicException If the menu, definitions, callbacks, or destination URLs are invalid.
+     */
     public function navigation(string $name): array
     {
         $context = $this->context();
@@ -140,6 +176,7 @@ final readonly class Pages
         $items = [];
         foreach ($entries as $entry) {
             $owner = "menu '{$name}' entry '{$entry->id}'";
+            // Guard before resolving resource-dependent labels, URLs, or descendants.
             if ($entry->visibility !== null) {
                 try {
                     $visible = ($entry->visibility)($context);

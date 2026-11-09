@@ -6,6 +6,7 @@ namespace WavyKit\Pages;
 
 use Closure;
 
+/** Immutable placement snapshot; group IDs identify presentation, page IDs reference definitions. */
 final readonly class MenuDefinition
 {
     /**

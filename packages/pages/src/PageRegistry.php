@@ -6,6 +6,7 @@ namespace WavyKit\Pages;
 
 use LogicException;
 
+/** Declaration store shared across requests; contains no resolved user or resource output. */
 final class PageRegistry
 {
     /** @var array<string, PageDefinition> */
@@ -19,6 +20,14 @@ final class PageRegistry
 
     private bool $finalized = false;
 
+    /**
+     * Snapshot declarations without resolving labels, URLs, or visibility.
+     *
+     * Multiple calls may contribute pages, including parents referenced by earlier
+     * calls. Complete registration before any read finalizes the registry.
+     *
+     * @throws LogicException If finalized, or IDs, route names, or nested parents are invalid.
+     */
     public function register(Page ...$pages): void
     {
         $this->assertMutable();
@@ -30,6 +39,14 @@ final class PageRegistry
         $this->definitions += $pending;
     }
 
+    /**
+     * Declare a named menu following the selected page subtrees.
+     *
+     * Root IDs retain supplied order; descendants use sibling order. Overlapping
+     * roots are rejected at finalization, even if hidden from navigation.
+     *
+     * @throws LogicException If finalized, or the menu name is empty or already used.
+     */
     public function deriveMenu(string $name, string ...$roots): void
     {
         $this->assertMutable();
@@ -37,6 +54,14 @@ final class PageRegistry
         $this->menus[$name] = array_values($roots);
     }
 
+    /**
+     * Snapshot an independently arranged menu referencing registered pages.
+     *
+     * Only declared children appear; page visibility defaults do not apply. Names
+     * are shared with derived menus. Page and group duplicates are checked on read.
+     *
+     * @throws LogicException If finalized, or menu names or placement structures are invalid.
+     */
     public function defineMenu(string $name, Menu ...$entries): void
     {
         $this->assertMutable();
@@ -44,6 +69,14 @@ final class PageRegistry
         $this->explicitMenus[$name] = array_map(fn (Menu $entry): MenuDefinition => $this->snapshotMenu($entry, []), array_values($entries));
     }
 
+    /**
+     * Validate references and freeze registrations; repeated calls are harmless.
+     *
+     * All public registry reads invoke this automatically. Laravel route existence
+     * is checked separately when resolving output through Laravel\Pages.
+     *
+     * @throws LogicException For missing or cyclic parents, duplicate route associations, or invalid menus.
+     */
     public function finalize(): void
     {
         if ($this->finalized) {
@@ -75,7 +108,13 @@ final class PageRegistry
         $this->finalized = true;
     }
 
-    /** @return list<PageDefinition> */
+    /**
+     * Read all immutable definitions in registration order, retaining callbacks.
+     *
+     * @return list<PageDefinition>
+     *
+     * @throws LogicException If registry finalization fails.
+     */
     public function all(): array
     {
         $this->finalize();
@@ -83,6 +122,11 @@ final class PageRegistry
         return array_values($this->definitions);
     }
 
+    /**
+     * Find a definition by stable page ID without evaluating its callbacks.
+     *
+     * @throws LogicException If the ID is unknown or registry finalization fails.
+     */
     public function page(string $id): PageDefinition
     {
         $this->finalize();
@@ -90,6 +134,11 @@ final class PageRegistry
         return $this->lookup($id);
     }
 
+    /**
+     * Find an exact named-route association; null or unknown names return null.
+     *
+     * @throws LogicException If registry finalization fails.
+     */
     public function forRoute(?string $name): ?PageDefinition
     {
         foreach ($this->all() as $page) {
@@ -101,13 +150,27 @@ final class PageRegistry
         return null;
     }
 
-    /** @return list<PageDefinition> Root first, including the requested page. */
+    /**
+     * Read the complete page ancestry, including route-less or navigation-hidden pages.
+     *
+     * @return list<PageDefinition> Root first, including the requested page.
+     *
+     * @throws LogicException If the ID is unknown or registry finalization fails.
+     */
     public function trail(string $id): array
     {
         return array_reverse($this->walk($this->page($id)));
     }
 
-    /** @return list<PageDefinition> */
+    /**
+     * Read immediate children in ascending order; ties retain registration order.
+     *
+     * Pass null for roots. An unknown parent ID returns an empty list.
+     *
+     * @return list<PageDefinition>
+     *
+     * @throws LogicException If registry finalization fails.
+     */
     public function children(?string $parentId): array
     {
         $pages = array_values(array_filter($this->all(), fn (PageDefinition $page): bool => $page->parentId === $parentId));
@@ -116,7 +179,13 @@ final class PageRegistry
         return $pages;
     }
 
-    /** @return list<PageDefinition> */
+    /**
+     * Read a derived menu's roots in their declared order.
+     *
+     * @return list<PageDefinition>
+     *
+     * @throws LogicException If the name is not a derived menu or finalization fails.
+     */
     public function menuRoots(string $name): array
     {
         $this->finalize();
@@ -127,7 +196,13 @@ final class PageRegistry
         return array_map(fn (string $id): PageDefinition => $this->lookup($id), $this->menus[$name]);
     }
 
-    /** @return list<MenuDefinition>|null Null selects a hierarchy-derived menu. */
+    /**
+     * Read explicit placements without resolving request-dependent values.
+     *
+     * @return list<MenuDefinition>|null Null selects a hierarchy-derived menu; an empty list is an empty explicit menu.
+     *
+     * @throws LogicException If the menu is unknown or registry finalization fails.
+     */
     public function menuEntries(string $name): ?array
     {
         $this->finalize();
