@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Illuminate\Foundation\Application;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
-use WavyKit\Pages\Laravel\PagesServiceProvider;
+use WavyKit\Pages\PagesServiceProvider;
 use WavyKit\Pages\Tests\Fixtures\CacheApp\FixtureController;
 use WavyKit\Pages\Tests\Fixtures\CacheApp\FixtureProvider;
 

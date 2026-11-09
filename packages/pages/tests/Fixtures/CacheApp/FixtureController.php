@@ -6,7 +6,7 @@ namespace WavyKit\Pages\Tests\Fixtures\CacheApp;
 
 use Illuminate\Auth\GenericUser;
 use Illuminate\Http\Request;
-use WavyKit\Pages\Laravel\Pages;
+use WavyKit\Pages\Pages;
 
 final class FixtureController
 {

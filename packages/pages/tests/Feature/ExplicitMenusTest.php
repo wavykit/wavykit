@@ -5,11 +5,11 @@ declare(strict_types=1);
 use Illuminate\Auth\GenericUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use WavyKit\Pages\Laravel\Pages;
 use WavyKit\Pages\Menu;
 use WavyKit\Pages\Page;
 use WavyKit\Pages\PageContext;
 use WavyKit\Pages\PageRegistry;
+use WavyKit\Pages\Pages;
 
 beforeEach(function () {
     Route::get('/settings', fn () => 'settings')->name('settings');

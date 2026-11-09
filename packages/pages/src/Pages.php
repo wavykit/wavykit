@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace WavyKit\Pages\Laravel;
+namespace WavyKit\Pages;
 
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -11,13 +11,8 @@ use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use LogicException;
 use Throwable;
-use WavyKit\Pages\MenuDefinition;
-use WavyKit\Pages\NavigationItem;
-use WavyKit\Pages\PageContext;
-use WavyKit\Pages\PageDefinition;
-use WavyKit\Pages\PageRegistry;
 
-/** Laravel request adapter for registered metadata; does not create routes or enforce access. */
+/** Resolves registered pages for the current Laravel request; does not create routes or enforce access. */
 final readonly class Pages
 {
     public function __construct(

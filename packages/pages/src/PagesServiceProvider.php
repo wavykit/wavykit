@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace WavyKit\Pages\Laravel;
+namespace WavyKit\Pages;
 
 use Illuminate\Support\ServiceProvider;
-use WavyKit\Pages\PageRegistry;
 
-/** Shares declarations while scoping the Laravel resolver to the application request/job lifecycle. */
+/** Shares declarations while scoping the request resolver to the application request/job lifecycle. */
 final class PagesServiceProvider extends ServiceProvider
 {
     public function register(): void

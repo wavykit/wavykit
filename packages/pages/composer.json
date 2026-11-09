@@ -49,7 +49,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "WavyKit\\Pages\\Laravel\\PagesServiceProvider"
+                "WavyKit\\Pages\\PagesServiceProvider"
             ]
         }
     }

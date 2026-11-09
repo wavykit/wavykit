@@ -5,9 +5,9 @@ declare(strict_types=1);
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use WavyKit\Pages\Laravel\Pages;
 use WavyKit\Pages\Page;
 use WavyKit\Pages\PageRegistry;
+use WavyKit\Pages\Pages;
 
 beforeEach(function () {
     Route::get('/dashboard', fn () => 'dashboard')->name('dashboard');

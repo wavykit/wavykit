@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
-use WavyKit\Pages\Laravel\Pages;
 use WavyKit\Pages\Page;
 use WavyKit\Pages\PageContext;
 use WavyKit\Pages\PageRegistry;
+use WavyKit\Pages\Pages;
 use WavyKit\Pages\Tests\Fixtures\Project;
 
 beforeEach(function () {

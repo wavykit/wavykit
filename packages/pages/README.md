@@ -23,7 +23,7 @@ pages and menus as shown below; existing routes and controllers remain in place.
 
 ## Page definitions
 
-Laravel package discovery loads `WavyKit\Pages\Laravel\PagesServiceProvider`.
+Laravel package discovery loads `WavyKit\Pages\PagesServiceProvider`.
 Register definitions in an application service provider's `boot()` method:
 
 ```php
@@ -62,10 +62,10 @@ Route-less pages are valid.
 
 ## Reading output
 
-Inject `WavyKit\Pages\Laravel\Pages` into a controller or resolve it in a view:
+Inject `WavyKit\Pages\Pages` into a controller or resolve it in a view:
 
 ```php
-$pages = app(\WavyKit\Pages\Laravel\Pages::class);
+$pages = app(\WavyKit\Pages\Pages::class);
 
 $page = $pages->page();
 $breadcrumbs = $pages->breadcrumbs();
