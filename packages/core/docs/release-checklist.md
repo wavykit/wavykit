@@ -25,7 +25,7 @@ repeated when the implementation or dependency constraints change.
 - [x] Set up the read-only `core` split repository and add it to the split GitHub App (2026-11-09; its history starts at the restructure commit).
 - [x] Delete the former `pages` and `navigation` split repositories (2026-11-09).
 - [x] Confirm CI passes on GitHub and the `core` split repository receives `main` (2026-11-09, `b870f39`).
-- [ ] Confirm the initial version and move Unreleased changes into a dated release entry.
+- [x] Confirm the initial version and move Unreleased changes into a dated release entry (`0.1.0 - 2026-11-09`).
 - [ ] Rebuild and inspect the final committed distribution, including new documentation and changelog.
 - [ ] Record final checks and verify that the intended release commit has a clean working tree.
 
@@ -35,7 +35,7 @@ repeated when the implementation or dependency constraints change.
 - [ ] Create and push the version tag on the monorepo when authorized; confirm the split workflow mirrors it to the `core` repository.
 - [ ] Register the `core` split repository on Packagist and verify installation from the published version when authorized.
 - [ ] Create the public `wavykit/.github` repository with the org profile, `SECURITY.md`, and a code of conduct when authorized.
-- [ ] Update the README's unpublished status with the release.
+- [x] Update the README's unpublished status for the release (in the release commit, so the tagged archive describes `v0.1.0`).
 
 Repository creation, workflow additions, commits, pushes, tags, and publication
 are separate actions requiring explicit authorization. Use the package's
