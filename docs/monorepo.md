@@ -17,6 +17,20 @@ Each package lives in `packages/<name>/` and is self-contained:
 There is no root `composer.json` and no shared install. Run checks inside each
 package with `composer install && composer check`.
 
+## Naming
+
+Every package is published under the `wavykit/` Composer vendor and the
+`WavyKit\` PHP namespace, and its folder matches its package name.
+
+- **Components** have generic, descriptive names for the capability they
+  provide: `wavykit/pages` (`WavyKit\Pages\`), and later names such as
+  navigation or actions.
+- **Composed products**, which combine components with their own integration
+  code and conventions, have brand names: for example `wavykit/current`
+  (`WavyKit\Current\`).
+
+## Layout choice
+
 We use `packages/<name>/` rather than Laravel's `src/Illuminate/<Name>`. That
 layout suits a root framework package that `replace`s every component; WavyKit
 has no such package, and each component is meant to be installed on its own.
