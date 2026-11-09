@@ -14,7 +14,7 @@ implementation or dependency constraints change.
 - [x] Include MIT license, matching Composer identity, and an Unreleased changelog.
 - [ ] Verify the complete suite on PHP 8.3, 8.4, and 8.5 after the navigation split (passed before it; see [verification limits](../README.md#verification-limits)). Monorepo CI covers this once it runs on GitHub.
 - [x] Check a lowest-installable dependency resolution; retain its documented deprecation caveat.
-- [ ] Validate a separate Laravel/Inertia consumer, including route-cache round trips, against the split packages (passed before the split).
+- [x] Validate a separate Laravel/Inertia consumer, including route-cache round trips, against the split packages (repeated after the split with `wavykit/navigation`).
 - [x] Check a stripped archive's runtime installation, class autoloading, and hierarchy behavior (repeated after the split, installed together with `wavykit/navigation`).
 - [x] Run the root `composer check` after the navigation split (PHP 8.5: 24 tests, 79 assertions for Pages; stable and lowest-installable resolutions).
 - [x] Commit the reviewed documentation changes when authorized.

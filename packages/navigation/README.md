@@ -194,7 +194,9 @@ runs PHPStan at maximum level on source, and executes Pest unit, Testbench
 feature, and route-cache integration tests. Monorepo CI runs the checks on PHP
 8.3–8.5 with lowest and stable resolutions. Locally, the suite has run on PHP
 8.5.12 with both resolutions; the lowest set emits the Symfony Translation
-deprecation documented by Pages.
+deprecation documented by Pages. A separate Laravel 13 / Inertia 3 / React
+consumer trial passes its application checks with Pages and Navigation, and its
+menu output is identical with and without cached routes.
 
 ## Versioning
 

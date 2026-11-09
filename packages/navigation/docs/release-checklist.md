@@ -14,7 +14,7 @@ if the implementation or dependency constraints change.
 - [x] Run the root `composer check` on PHP 8.5 with stable and lowest-installable resolutions (28 tests, 138 assertions).
 - [x] Check stripped archives of Navigation and Pages install together, autoload, and register both providers through package discovery.
 - [ ] Verify the suite on PHP 8.3 and 8.4 (monorepo CI covers this once it runs on GitHub).
-- [ ] Validate the separate Laravel/Inertia consumer trial against the split packages, including route-cache round trips.
+- [x] Validate the separate Laravel/Inertia consumer trial against the split packages, including route-cache round trips.
 
 ## Repository and release preparation
 
