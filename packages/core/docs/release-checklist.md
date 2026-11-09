@@ -26,15 +26,15 @@ repeated when the implementation or dependency constraints change.
 - [x] Delete the former `pages` and `navigation` split repositories (2026-11-09).
 - [x] Confirm CI passes on GitHub and the `core` split repository receives `main` (2026-11-09, `b870f39`).
 - [x] Confirm the initial version and move Unreleased changes into a dated release entry (`0.1.0 - 2026-11-09`).
-- [ ] Rebuild and inspect the final committed distribution, including new documentation and changelog.
-- [ ] Record final checks and verify that the intended release commit has a clean working tree.
+- [x] Rebuild and inspect the final committed distribution, including new documentation and changelog (2026-11-09; 24 files, smoke-tested in a fresh Laravel 13 application).
+- [x] Record final checks and verify that the intended release commit has a clean working tree (`4e417a3`, built from a clean clone).
 
 ## Publication
 
-- [ ] Merge/push the reviewed branch when authorized.
-- [ ] Create and push the version tag on the monorepo when authorized; confirm the split workflow mirrors it to the `core` repository.
-- [ ] Register the `core` split repository on Packagist and verify installation from the published version when authorized.
-- [ ] Create the public `wavykit/.github` repository with the org profile, `SECURITY.md`, and a code of conduct when authorized.
+- [x] Merge the reviewed release branch (PR #1, merged as `217546b`).
+- [x] Create and push the version tag on the monorepo; confirm the split workflow mirrors it to the `core` repository (`v0.1.0` on `217546b`, mirrored as `eaeb598`).
+- [x] Register the `core` split repository on Packagist and verify installation from the published version (auto-updated through a GitHub webhook).
+- [x] Create the public `wavykit/.github` repository with the org profile, `SECURITY.md`, and a code of conduct.
 - [x] Update the README's unpublished status for the release (in the release commit, so the tagged archive describes `v0.1.0`).
 
 Repository creation, workflow additions, commits, pushes, tags, and publication

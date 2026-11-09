@@ -45,9 +45,9 @@ composer check        # or: composer check core
 
 Packages are released together with lockstep `vX.Y.Z` tags and distributed
 through read-only split repositories; CI runs every package's checks. See [Monorepo layout and releases](docs/monorepo.md)
-for the layout, release workflow, and the one-time setup that remains. The
-monorepo and split repositories are public on GitHub; nothing has been
-published to Packagist yet.
+for the layout and release workflow. The monorepo and the `wavykit/core`
+split repository are public on GitHub, and `wavykit/core` is published on
+[Packagist](https://packagist.org/packages/wavykit/core).
 
 ## Ownership
 

@@ -102,6 +102,8 @@ direction; it will be named and scoped when it is planned.
 
 ## Not planned
 
-WavyKit is not building a content management system, an admin panel, a
-breadcrumbs-only package, or support for frameworks other than Laravel.
-These are current decisions, and the maintainers may revisit them.
+The maintainers are not shipping a content management system, an admin panel,
+a breadcrumbs-only package, or support for frameworks other than Laravel as
+official WavyKit products. CMSs and admin panels are exactly the kind of thing
+you can build with WavyKit's components; they are just not on the maintainers'
+roadmap. These are current decisions, and the maintainers may revisit them.
