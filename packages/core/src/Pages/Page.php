@@ -11,21 +11,21 @@ use WavyKit\Context;
 final class Page
 {
     /** @var string|Closure(Context): mixed */
-    public string|Closure $label;
+    private string|Closure $label;
 
     /** @var null|Closure(Context): mixed */
-    public ?Closure $routeParameters = null;
+    private ?Closure $routeParameters = null;
 
-    public ?string $routeName = null;
+    private ?string $routeName = null;
 
-    public ?string $parentId = null;
+    private ?string $parentId = null;
 
-    public int $sortOrder = 0;
+    private int $order = 0;
 
-    public ?string $navigationIcon = null;
+    private ?string $icon = null;
 
     /** @var list<Page> */
-    public array $childPages = [];
+    private array $children = [];
 
     private function __construct(public readonly string $id)
     {
@@ -70,7 +70,7 @@ final class Page
     }
 
     /**
-     * Replace the destination URL parameter source using active-request context.
+     * Replace the source of this page's route parameters using active-request context.
      *
      * Return an array keyed by route parameter name. It replaces, rather than merges
      * with, current parameters; only destination path parameters are forwarded.
@@ -78,7 +78,7 @@ final class Page
      *
      * @param  callable(Context): mixed  $parameters
      */
-    public function parameters(callable $parameters): self
+    public function routeParameters(callable $parameters): self
     {
         $this->routeParameters = Closure::fromCallable($parameters);
 
@@ -102,7 +102,7 @@ final class Page
      */
     public function order(int $order): self
     {
-        $this->sortOrder = $order;
+        $this->order = $order;
 
         return $this;
     }
@@ -112,7 +112,7 @@ final class Page
      */
     public function icon(string $icon): self
     {
-        $this->navigationIcon = $icon;
+        $this->icon = $icon;
 
         return $this;
     }
@@ -124,8 +124,36 @@ final class Page
      */
     public function children(self ...$pages): self
     {
-        $this->childPages = array_values($pages);
+        $this->children = array_values($pages);
 
         return $this;
+    }
+
+    /** @internal Read by PageRegistry during registration. */
+    public function declaredParent(): ?string
+    {
+        return $this->parentId;
+    }
+
+    /** @internal Read by PageRegistry during registration. */
+    public function declaredRoute(): ?string
+    {
+        return $this->routeName;
+    }
+
+    /**
+     * @internal Read by PageRegistry during registration.
+     *
+     * @return list<Page>
+     */
+    public function declaredChildren(): array
+    {
+        return $this->children;
+    }
+
+    /** @internal Snapshot taken by PageRegistry, with the resolved parent. */
+    public function toDefinition(?string $parentId): PageDefinition
+    {
+        return new PageDefinition($this->id, $this->label, $this->routeName, $parentId, $this->order, $this->routeParameters, $this->icon);
     }
 }

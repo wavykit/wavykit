@@ -6,7 +6,8 @@ use Illuminate\Auth\GenericUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use WavyKit\Context;
-use WavyKit\Navigation\Menu;
+use WavyKit\Exceptions\ResolutionFailed;
+use WavyKit\Navigation\MenuEntry;
 use WavyKit\Navigation\MenuRegistry;
 use WavyKit\Navigation\Navigation;
 use WavyKit\Pages\Page;
@@ -31,12 +32,12 @@ beforeEach(function () {
 
 test('named menus place the same page differently without changing breadcrumbs', function () {
     app(MenuRegistry::class)->define('primary',
-        Menu::group('settings')->label('Settings')->children(Menu::page('account')),
+        MenuEntry::group('settings')->label('Settings')->children(MenuEntry::page('account')),
     );
     app(MenuRegistry::class)->define('footer',
-        Menu::page('privacy'),
-        Menu::group('your-account')->label('Your account')->icon('footer')->children(
-            Menu::page('account')->label('Profile')->icon('profile'),
+        MenuEntry::page('privacy'),
+        MenuEntry::group('your-account')->label('Your account')->icon('footer')->children(
+            MenuEntry::page('account')->label('Profile')->icon('profile'),
         ),
     );
 
@@ -59,7 +60,7 @@ test('named menus place the same page differently without changing breadcrumbs',
 });
 
 test('linked menu parents inherit activity through explicitly placed children', function () {
-    app(MenuRegistry::class)->define('primary', Menu::page('privacy')->children(Menu::page('account')));
+    app(MenuRegistry::class)->define('primary', MenuEntry::page('privacy')->children(MenuEntry::page('account')));
     app(MenuRegistry::class)->define('footer');
 
     $this->getJson('/account')->assertOk()
@@ -69,7 +70,7 @@ test('linked menu parents inherit activity through explicitly placed children', 
 });
 
 test('explicit entries never implicitly import page descendants', function () {
-    app(MenuRegistry::class)->define('primary', Menu::page('settings'));
+    app(MenuRegistry::class)->define('primary', MenuEntry::page('settings'));
     app(MenuRegistry::class)->define('footer');
     $this->getJson('/account')->assertOk()
         ->assertJsonPath('primary.0.active', true)
@@ -78,7 +79,7 @@ test('explicit entries never implicitly import page descendants', function () {
 
 test('derived and explicit menus coexist and preserve activity for absent descendants', function () {
     app(MenuRegistry::class)->derive('primary', 'settings')->except('account');
-    app(MenuRegistry::class)->define('footer', Menu::page('account'));
+    app(MenuRegistry::class)->define('footer', MenuEntry::page('account'));
     app(PageRegistry::class)->register(Page::make('account.edit')->parent('account')->route('account.edit'));
     Route::get('/account/edit', fn (Navigation $navigation) => [
         'primary' => $navigation->menu('primary'),
@@ -97,9 +98,9 @@ test('derived and explicit menus coexist and preserve activity for absent descen
 test('hidden resource placements skip parameter mapping as well as labels', function () {
     app(PageRegistry::class)->register(Page::make('resource')->route('resource')
         ->label(fn () => throw new LogicException('Must not resolve resource label'))
-        ->parameters(fn () => throw new LogicException('Must not resolve resource parameters')));
+        ->routeParameters(fn () => throw new LogicException('Must not resolve resource parameters')));
     Route::get('/resource/{resource}', fn () => 'resource')->name('resource');
-    app(MenuRegistry::class)->define('primary', Menu::page('resource')->visibleWhen(fn (): bool => false));
+    app(MenuRegistry::class)->define('primary', MenuEntry::page('resource')->visibleWhen(fn (): bool => false));
     app(MenuRegistry::class)->define('footer');
 
     $this->getJson('/account')->assertOk()->assertJsonPath('primary', []);
@@ -108,12 +109,12 @@ test('hidden resource placements skip parameter mapping as well as labels', func
 test('request visibility is isolated across guest allowed denied and guest requests', function () {
     $calls = 0;
     app(MenuRegistry::class)->define('primary',
-        Menu::page('privacy'),
-        Menu::group('restricted')->label('Restricted')->visibleWhen(function (Context $context) use (&$calls): bool {
+        MenuEntry::page('privacy'),
+        MenuEntry::group('restricted')->label('Restricted')->visibleWhen(function (Context $context) use (&$calls): bool {
             $calls++;
 
             return $context->user instanceof GenericUser && $context->user->allowed === true;
-        })->children(Menu::page('account')->label(function (Context $context): string {
+        })->children(MenuEntry::page('account')->label(function (Context $context): string {
             return 'Account for '.$context->user->getAuthIdentifier();
         })),
     );
@@ -138,11 +139,11 @@ test('request visibility is isolated across guest allowed denied and guest reque
 
 test('hidden entries skip callbacks and empty groups disappear while linked parents stay', function () {
     app(MenuRegistry::class)->define('primary',
-        Menu::group('empty')->label(fn () => throw new LogicException('Empty group label must not run'))->children(
-            Menu::page('account')->visibleWhen(fn (): bool => false)->label(fn () => throw new LogicException('Hidden label must not run')),
+        MenuEntry::group('empty')->label(fn () => throw new LogicException('Empty group label must not run'))->children(
+            MenuEntry::page('account')->visibleWhen(fn (): bool => false)->label(fn () => throw new LogicException('Hidden label must not run')),
         ),
-        Menu::page('privacy')->children(
-            Menu::group('hidden')->visibleWhen(fn (): bool => false)->children(Menu::page('settings')->label(fn () => throw new LogicException('Hidden subtree must not run'))),
+        MenuEntry::page('privacy')->children(
+            MenuEntry::group('hidden')->visibleWhen(fn (): bool => false)->children(MenuEntry::page('settings')->label(fn () => throw new LogicException('Hidden subtree must not run'))),
         ),
     );
     app(MenuRegistry::class)->define('footer');
@@ -153,18 +154,18 @@ test('hidden entries skip callbacks and empty groups disappear while linked pare
 });
 
 test('invalid visibility values and exceptions identify the menu and entry', function (Closure $predicate, string $message) {
-    app(MenuRegistry::class)->define('primary', Menu::page('account')->visibleWhen($predicate));
+    app(MenuRegistry::class)->define('primary', MenuEntry::page('account')->visibleWhen($predicate));
     app(MenuRegistry::class)->define('footer');
     $this->withoutExceptionHandling();
-    expect(fn () => $this->get('/account'))->toThrow(LogicException::class, $message);
+    expect(fn () => $this->get('/account'))->toThrow(ResolutionFailed::class, $message);
 })->with([
     'non boolean' => [fn (): int => 1, "Visibility callback for menu 'primary' entry 'account' must return a bool"],
     'exception' => [fn () => throw new LogicException('predicate failed'), "Could not resolve visibility for menu 'primary' entry 'account': predicate failed"],
 ]);
 
 test('placement labels are resolved with request context and checked', function () {
-    app(MenuRegistry::class)->define('primary', Menu::page('account')->label(fn (): int => 123));
+    app(MenuRegistry::class)->define('primary', MenuEntry::page('account')->label(fn (): int => 123));
     app(MenuRegistry::class)->define('footer');
     $this->withoutExceptionHandling();
-    expect(fn () => $this->get('/account'))->toThrow(LogicException::class, "Label callback for menu 'primary' entry 'account' must return a string");
+    expect(fn () => $this->get('/account'))->toThrow(ResolutionFailed::class, "Label callback for menu 'primary' entry 'account' must return a string");
 });

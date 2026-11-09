@@ -12,11 +12,11 @@ repeated when the implementation or dependency constraints change.
 - [x] Provide installation, registration, breadcrumb, menu, visibility, rendering, resource, and route-cache examples in the README.
 - [x] Include MIT license, matching Composer identity, and an Unreleased changelog.
 - [x] Restructure Pages and Navigation into `wavykit/core` (WK-018) and run the root `composer check` (PHP 8.5: 51 tests, 208 assertions).
-- [ ] Decide the public API in the API review (WK-012) and implement agreed changes.
+- [x] Decide the public API in the API review (WK-012) and implement agreed changes (2026-11-09; 57 tests, 218 assertions).
 - [x] Verify the suite on PHP 8.3, 8.4, and 8.5 with lowest and stable resolutions after the restructure (monorepo CI passed on `b870f39`, 2026-11-09).
 - [x] Check a stripped archive's runtime installation, class autoloading, provider discovery, and page and menu behavior after the restructure (2026-11-09, with `laravel/framework` in a scratch application).
 - [x] Validate the playground consumer, including route-cache round trips, after the restructure (2026-11-09).
-- [ ] Validate the playground consumer again after WK-012.
+- [x] Validate the playground consumer again after WK-012 (2026-11-09; output identical with and without cached routes).
 
 ## Repository and release preparation
 

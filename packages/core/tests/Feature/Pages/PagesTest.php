@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use WavyKit\Exceptions\InvalidDefinition;
 use WavyKit\Navigation\Navigation;
 use WavyKit\Pages\Page;
 use WavyKit\Pages\PageRegistry;
@@ -17,7 +18,7 @@ beforeEach(function () {
         return ['breadcrumbs' => app(Navigation::class)->breadcrumbs()];
     })->name('projects.create');
     Route::get('/other', function (Pages $pages) {
-        return ['page' => $pages->page(), 'breadcrumbs' => app(Navigation::class)->breadcrumbs()];
+        return ['page' => $pages->current(), 'breadcrumbs' => app(Navigation::class)->breadcrumbs()];
     })->name('other');
 
     $registry = app(PageRegistry::class);
@@ -31,8 +32,8 @@ beforeEach(function () {
 
 test('existing Laravel routes produce breadcrumbs with a distinct current item', function () {
     $this->getJson('/projects/create')->assertOk()
-        ->assertJsonPath('breadcrumbs.0', ['pageId' => 'projects', 'label' => 'Projects', 'url' => 'http://localhost/projects', 'current' => false])
-        ->assertJsonPath('breadcrumbs.1', ['pageId' => 'projects.create', 'label' => 'Create project', 'url' => null, 'current' => true]);
+        ->assertJsonPath('breadcrumbs.0', ['pageId' => 'projects', 'label' => 'Projects', 'url' => 'http://localhost/projects', 'current' => false, 'icon' => null])
+        ->assertJsonPath('breadcrumbs.1', ['pageId' => 'projects.create', 'label' => 'Create project', 'url' => 'http://localhost/projects/create', 'current' => true, 'icon' => null]);
 });
 
 test('an unregistered route has no page and empty breadcrumbs', function () {
@@ -46,7 +47,7 @@ test('a later unmatched request cannot reuse the previous route page context', f
         $pages = app(Pages::class);
 
         return response()->json([
-            'page' => $pages->page(),
+            'page' => $pages->current(),
             'breadcrumbs' => app(Navigation::class)->breadcrumbs(),
         ], 404);
     });
@@ -72,7 +73,7 @@ test('route-less ancestors stay in breadcrumbs without links', function () {
 test('unknown associated routes identify the page and destination', function () {
     app(PageRegistry::class)->register(Page::make('broken')->route('missing'));
     $this->withoutExceptionHandling();
-    expect(fn () => $this->get('/other'))->toThrow(LogicException::class, "Page 'broken' references unknown route 'missing'");
+    expect(fn () => $this->get('/other'))->toThrow(InvalidDefinition::class, "Page 'broken' references unknown route 'missing'");
 });
 
 test('route associations do not change route methods paths or middleware', function () {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace WavyKit;
 
 use Illuminate\Contracts\Auth\Authenticatable;
-use LogicException;
+use WavyKit\Exceptions\ResolutionFailed;
 use WavyKit\Pages\PageDefinition;
 
 /**
@@ -17,7 +17,11 @@ use WavyKit\Pages\PageDefinition;
  */
 final readonly class Context
 {
-    /** @param array<string, mixed> $parameters */
+    /**
+     * @internal Created by Pages::context().
+     *
+     * @param  array<string, mixed>  $parameters
+     */
     public function __construct(
         public ?PageDefinition $page,
         private array $parameters,
@@ -27,13 +31,13 @@ final readonly class Context
     /**
      * Read a named bound route value; a present null value is returned unchanged.
      *
-     * @throws LogicException If the parameter name is absent.
+     * @throws ResolutionFailed If the parameter name is absent.
      */
     public function parameter(string $name): mixed
     {
         if (! array_key_exists($name, $this->parameters)) {
             $pageId = $this->page->id ?? '(unregistered)';
-            throw new LogicException("Active page '{$pageId}' is missing route parameter '{$name}'.");
+            throw new ResolutionFailed("Active page '{$pageId}' is missing route parameter '{$name}'.");
         }
 
         return $this->parameters[$name];

@@ -82,11 +82,11 @@ Inject `WavyKit\Pages\Pages` into a controller or resolve it in a view:
 ```php
 $pages = app(\WavyKit\Pages\Pages::class);
 
-$page = $pages->page();
+$page = $pages->current();
 $context = $pages->context();
 ```
 
-`page()` returns the immutable registered `PageDefinition` for the current
+`current()` returns the immutable registered `PageDefinition` for the current
 route, or null. It retains dynamic callbacks rather than executing them.
 `context()` returns a `WavyKit\Context` with the active definition, bound route
 parameters, and current user.
@@ -133,7 +133,7 @@ an explicit mapping on the ancestor:
 ```php
 Page::make('projects.show')
     ->route('projects.show')
-    ->parameters(fn (Context $context): array => [
+    ->routeParameters(fn (Context $context): array => [
         'project' => $context->parameter('item'),
     ]);
 ```
@@ -163,22 +163,24 @@ view:
 $breadcrumbs = app(\WavyKit\Navigation\Navigation::class)->breadcrumbs();
 ```
 
-On `projects.create`, breadcrumbs are Projects → Create project. Breadcrumbs
-are arrays containing `pageId`, `label`, nullable `url`, and `current`. The
-current item and route-less ancestors have no URL. Labels are resolved plain
-strings, and an unregistered active route returns empty breadcrumbs.
+On `projects.create`, breadcrumbs are Projects → Create project. Each is a
+`WavyKit\Navigation\Breadcrumb` with `pageId`, `label`, nullable `url`,
+`current`, and nullable `icon`, the same shape as menu items. Every breadcrumb
+keeps its URL, including the current one, so the renderer decides whether to
+link it; route-less ancestors have no URL. Labels are resolved plain strings,
+and an unregistered active route returns empty breadcrumbs.
 
 ```blade
 <nav aria-label="Breadcrumb">
     <ol>
         @foreach ($breadcrumbs as $crumb)
             <li>
-                @if ($crumb['current'])
-                    <span aria-current="page">{{ $crumb['label'] }}</span>
-                @elseif ($crumb['url'] !== null)
-                    <a href="{{ $crumb['url'] }}">{{ $crumb['label'] }}</a>
+                @if ($crumb->current)
+                    <span aria-current="page">{{ $crumb->label }}</span>
+                @elseif ($crumb->url !== null)
+                    <a href="{{ $crumb->url }}">{{ $crumb->label }}</a>
                 @else
-                    <span>{{ $crumb['label'] }}</span>
+                    <span>{{ $crumb->label }}</span>
                 @endif
             </li>
         @endforeach
@@ -211,19 +213,21 @@ breadcrumbs, can appear in other menus, and still make their ancestors active:
 on a project's page, Projects is active even though the project is not listed.
 Excluded branches do not run label or parameter callbacks. Exclusion is
 presentation configuration, never an HTTP authorization rule. Overlapping
-roots that would list a page twice are rejected.
+roots that would list a page twice are rejected. Derived menus have no
+request-time visibility; use an explicit menu when entries depend on the user.
 
 ### Explicit menus
 
-Use `define()` when a menu needs its own nesting or ordering:
+Use `define()` when a menu needs its own nesting or ordering. Each
+`MenuEntry` places a registered page or groups other entries:
 
 ```php
-use WavyKit\Navigation\Menu;
+use WavyKit\Navigation\MenuEntry;
 
 $menus->define('footer',
-    Menu::page('privacy'),
-    Menu::group('your-account')->label('Your account')->children(
-        Menu::page('account')->label('Profile')->icon('user'),
+    MenuEntry::page('privacy'),
+    MenuEntry::group('your-account')->label('Your account')->children(
+        MenuEntry::page('account')->label('Profile')->icon('user'),
     ),
 );
 ```
@@ -251,7 +255,7 @@ when their visibility callbacks would hide them.
 use WavyKit\Context;
 
 $menus->define('account',
-    Menu::page('account')->visibleWhen(
+    MenuEntry::page('account')->visibleWhen(
         fn (Context $context): bool => $context->user !== null,
     ),
 );
@@ -276,8 +280,9 @@ $items = app(\WavyKit\Navigation\Navigation::class)->menu('primary');
 ```
 
 `menu()` returns `MenuItem` objects with nullable `pageId`, `label`, nullable
-`url`, `current`, `active`, recursive `children`, nullable `icon`, and `kind`
-(`page` or `group`). Presentation groups have no page ID or URL; route-less
+`url`, `current`, `active`, recursive `children`, nullable `icon`, and `kind`,
+a `MenuItemKind` enum that serializes to `page` or `group`. As with
+breadcrumbs, the current page keeps its URL. Presentation groups have no page ID or URL; route-less
 pages have a null URL.
 
 `current` identifies an exact page match. `active` includes that match and the
@@ -310,6 +315,21 @@ For example, create `resources/views/partials/menu.blade.php`:
 
 Render it inside an appropriately labelled navigation element with
 `@include('partials.menu', ['items' => $navigation->menu('primary')])`.
+
+## Errors
+
+Every exception implements `WavyKit\Exceptions\WavyKitException` and extends
+`LogicException`:
+
+- `InvalidDefinition`: a page or menu declaration is invalid, was registered
+  after the registries were read, or references an unknown route, parent, or
+  page.
+- `ResolutionFailed`: output could not be resolved for the request, such as a
+  failing or invalid label, route-parameter, or visibility callback, a missing
+  route parameter, a URL generation failure, or an unknown menu. The original
+  exception is kept as the previous exception.
+
+Messages name the page, menu, or entry involved.
 
 ## Lifecycle and route caching
 

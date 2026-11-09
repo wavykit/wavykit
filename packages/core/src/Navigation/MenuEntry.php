@@ -7,21 +7,21 @@ namespace WavyKit\Navigation;
 use Closure;
 use WavyKit\Context;
 
-/** A menu placement references a page, or groups other placements. */
-final class Menu
+/** Builds one entry in an explicit menu: a placement of a page, or a group of entries. */
+final class MenuEntry
 {
     /** @var string|Closure(Context): mixed|null */
-    public string|Closure|null $label = null;
+    private string|Closure|null $label = null;
 
-    public ?string $icon = null;
+    private ?string $icon = null;
 
     /** @var null|Closure(Context): mixed */
-    public ?Closure $visibility = null;
+    private ?Closure $visibility = null;
 
-    /** @var list<Menu> */
-    public array $entries = [];
+    /** @var list<MenuEntry> */
+    private array $children = [];
 
-    private function __construct(public readonly string $id, public readonly bool $isGroup) {}
+    private function __construct(public readonly string $id, private readonly bool $isGroup) {}
 
     /**
      * Place a registered page by ID without changing its breadcrumb parent.
@@ -69,7 +69,7 @@ final class Menu
     }
 
     /**
-     * Filter this placement and its descendants using the current request.
+     * Filter this entry and its descendants using the current request.
      *
      * Return bool; false skips labels, URLs, and descendant callbacks. The context
      * user may be null. Predicates may run repeatedly; avoid side effects and
@@ -87,13 +87,33 @@ final class Menu
     /**
      * Replace children in authored order; page descendants are not imported.
      *
-     * A page placement remains a link even when it has children. Registration
-     * snapshots placements; moving them does not alter the page hierarchy.
+     * A page entry remains a link even when it has children. Registration
+     * snapshots entries; moving them does not alter the page hierarchy.
      */
     public function children(self ...$entries): self
     {
-        $this->entries = array_values($entries);
+        $this->children = array_values($entries);
 
         return $this;
+    }
+
+    /**
+     * @internal Read by MenuRegistry during registration.
+     *
+     * @return list<MenuEntry>
+     */
+    public function declaredChildren(): array
+    {
+        return $this->children;
+    }
+
+    /**
+     * @internal Snapshot taken by MenuRegistry, with already snapshotted children.
+     *
+     * @param  list<MenuEntryDefinition>  $children
+     */
+    public function toDefinition(array $children): MenuEntryDefinition
+    {
+        return new MenuEntryDefinition($this->id, $this->isGroup, $this->label, $this->icon, $this->visibility, $children);
     }
 }

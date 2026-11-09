@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace WavyKit\Navigation;
 
-use Closure;
-use LogicException;
 use Throwable;
 use WavyKit\Context;
+use WavyKit\Exceptions\InvalidDefinition;
+use WavyKit\Exceptions\ResolutionFailed;
 use WavyKit\Pages\PageDefinition;
 use WavyKit\Pages\PageRegistry;
 use WavyKit\Pages\Pages;
+use WavyKit\Support\Label;
 
 /**
  * Resolves breadcrumbs and named menus for the current Laravel request; does not enforce access.
@@ -28,24 +29,27 @@ final readonly class Navigation
     /**
      * Resolve root-first ancestry, including the current page and route-less parents.
      *
-     * Returns an empty list for unregistered routes. Current and route-less entries
-     * have null URLs. All labels use the same active-request context.
+     * Returns an empty list for unregistered routes. Every breadcrumb keeps its URL,
+     * including the current one; route-less pages have none. All labels use the
+     * same active-request context.
      *
-     * @return list<array{pageId: string, label: string, url: ?string, current: bool}>
+     * @return list<Breadcrumb>
      *
-     * @throws LogicException If definitions, callbacks, or destination URLs cannot be resolved.
+     * @throws InvalidDefinition If definitions or route references are invalid.
+     * @throws ResolutionFailed If callbacks or destination URLs cannot be resolved.
      */
     public function breadcrumbs(): array
     {
         $context = $this->pages->context();
         $current = $context->page;
 
-        return array_map(fn (PageDefinition $page): array => [
-            'pageId' => $page->id,
-            'label' => $this->pages->label($page, $context),
-            'url' => $page->id === $current?->id ? null : $this->pages->url($page, $context),
-            'current' => $page->id === $current?->id,
-        ], $this->pages->activeTrail($context));
+        return array_map(fn (PageDefinition $page): Breadcrumb => new Breadcrumb(
+            $page->id,
+            $this->pages->label($page, $context),
+            $this->pages->url($page, $context),
+            $page->id === $current?->id,
+            $page->icon,
+        ), $this->pages->activeTrail($context));
     }
 
     /**
@@ -57,7 +61,8 @@ final readonly class Navigation
      *
      * @return list<MenuItem>
      *
-     * @throws LogicException If the menu, definitions, callbacks, or destination URLs are invalid.
+     * @throws InvalidDefinition If definitions or route references are invalid.
+     * @throws ResolutionFailed If the menu is unknown, or callbacks or destination URLs cannot be resolved.
      */
     public function menu(string $name): array
     {
@@ -99,7 +104,7 @@ final readonly class Navigation
     }
 
     /**
-     * @param  list<MenuDefinition>  $entries
+     * @param  list<MenuEntryDefinition>  $entries
      * @param  list<string>  $activeIds
      * @return list<MenuItem>
      */
@@ -113,10 +118,10 @@ final readonly class Navigation
                 try {
                     $visible = ($entry->visibility)($context);
                 } catch (Throwable $exception) {
-                    throw new LogicException("Could not resolve visibility for {$owner}: {$exception->getMessage()}", 0, $exception);
+                    throw new ResolutionFailed("Could not resolve visibility for {$owner}: {$exception->getMessage()}", 0, $exception);
                 }
                 if (! is_bool($visible)) {
-                    throw new LogicException("Visibility callback for {$owner} must return a bool.");
+                    throw new ResolutionFailed("Visibility callback for {$owner} must return a bool.");
                 }
                 if (! $visible) {
                     continue;
@@ -129,7 +134,7 @@ final readonly class Navigation
             }
             $page = $entry->isGroup ? null : $this->registry->page($entry->id);
             $label = $entry->label !== null
-                ? $this->resolveLabel($entry->label, $context, $owner)
+                ? Label::resolve($entry->label, $context, $owner)
                 : ($page === null ? $entry->id : $this->pages->label($page, $context));
             $activeChild = false;
             foreach ($children as $child) {
@@ -144,28 +149,10 @@ final readonly class Navigation
                 $activeChild || ($page !== null && in_array($page->id, $activeIds, true)),
                 $children,
                 $entry->icon ?? $page?->icon,
-                $entry->isGroup ? 'group' : 'page',
+                $entry->isGroup ? MenuItemKind::Group : MenuItemKind::Page,
             );
         }
 
         return $items;
-    }
-
-    /** @param string|Closure(Context): mixed $value */
-    private function resolveLabel(string|Closure $value, Context $context, string $owner): string
-    {
-        if (is_string($value)) {
-            return $value;
-        }
-        try {
-            $label = $value($context);
-        } catch (Throwable $exception) {
-            throw new LogicException("Could not resolve label for {$owner}: {$exception->getMessage()}", 0, $exception);
-        }
-        if (! is_string($label)) {
-            throw new LogicException("Label callback for {$owner} must return a string.");
-        }
-
-        return $label;
     }
 }

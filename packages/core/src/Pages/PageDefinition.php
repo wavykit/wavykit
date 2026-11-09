@@ -11,8 +11,10 @@ use WavyKit\Context;
 final readonly class PageDefinition
 {
     /**
+     * @internal Created by PageRegistry from a Page builder.
+     *
      * @param  string|Closure(Context): mixed  $label
-     * @param  null|Closure(Context): mixed  $parameters
+     * @param  null|Closure(Context): mixed  $routeParameters
      */
     public function __construct(
         public string $id,
@@ -20,7 +22,7 @@ final readonly class PageDefinition
         public ?string $routeName,
         public ?string $parentId,
         public int $order,
-        public ?Closure $parameters = null,
+        public ?Closure $routeParameters = null,
         public ?string $icon = null,
     ) {}
 }

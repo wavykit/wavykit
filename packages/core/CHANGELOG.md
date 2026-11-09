@@ -6,15 +6,16 @@
 
 - Laravel 13 page registration with stable IDs and existing named-route associations.
 - Nested and separately contributed definitions with parent relationships and sibling ordering.
-- Resource-aware labels, explicit route-parameter mapping, and a shared request context (`WavyKit\Context`) with the active page, bound parameters, and current user.
-- Breadcrumb trails with route-less ancestors and current-page markers.
+- Resource-aware labels, explicit route-parameter mapping with `routeParameters()`, and a shared request context (`WavyKit\Context`) with the active page, bound parameters, and current user.
+- Breadcrumb trails as `Breadcrumb` objects, with route-less ancestors, current-page markers, icons, and URLs kept for the current page.
 - Optional page icons as presentation identifiers.
 - Named menus derived from the page hierarchy, with authored root order and per-menu `except()` exclusions.
-- Explicitly arranged menus with page placements, presentation groups, label/icon overrides, and authored order.
+- Explicitly arranged menus built from `MenuEntry` page placements and presentation groups, with label/icon overrides and authored order; `define()` returns a `DefinedMenu` for future menu-level options.
 - Current and active states from page ancestry and explicit menu nesting.
 - Request-time `visibleWhen()` predicates with access to the current user.
-- `MenuItem` output containing resolved data only.
+- `MenuItem` output containing resolved data only, with a `MenuItemKind` enum that serializes to `page` or `group`.
 - Public active-trail, label, and URL resolution for packages that build on page output.
+- `InvalidDefinition` and `ResolutionFailed` exceptions, both implementing `WavyKitException` and extending `LogicException`.
 - Validation for duplicate IDs, missing or cyclic parents, conflicting parents, duplicate route associations, unknown routes, duplicate menu names, unknown page references and exclusions, and duplicate page or group placements.
 
 ### Fixed

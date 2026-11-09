@@ -7,13 +7,15 @@ namespace WavyKit\Navigation;
 use Closure;
 use WavyKit\Context;
 
-/** Immutable placement snapshot; group IDs identify presentation, page IDs reference definitions. */
-final readonly class MenuDefinition
+/** Immutable entry snapshot; group IDs identify presentation, page IDs reference definitions. */
+final readonly class MenuEntryDefinition
 {
     /**
+     * @internal Created by MenuRegistry from a MenuEntry builder.
+     *
      * @param  string|Closure(Context): mixed|null  $label
      * @param  null|Closure(Context): mixed  $visibility
-     * @param  list<MenuDefinition>  $children
+     * @param  list<MenuEntryDefinition>  $children
      */
     public function __construct(
         public string $id,

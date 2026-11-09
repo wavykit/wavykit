@@ -7,6 +7,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use WavyKit\Context;
+use WavyKit\Exceptions\ResolutionFailed;
 use WavyKit\Navigation\MenuRegistry;
 use WavyKit\Navigation\Navigation;
 use WavyKit\Pages\Page;
@@ -92,7 +93,7 @@ test('excluded resource pages keep their ancestors active without resolving thei
     app(PageRegistry::class)->register(
         Page::make('projects.show')->parent('projects')->route('projects.show')
             ->label(fn (Context $context): string => throw new LogicException('Excluded label must not run'))
-            ->parameters(fn (Context $context): array => throw new LogicException('Excluded parameters must not run'))
+            ->routeParameters(fn (Context $context): array => throw new LogicException('Excluded parameters must not run'))
             ->children(Page::make('projects.edit')->route('projects.edit')->label('Edit')),
     );
     app(MenuRegistry::class)->derive('resources', 'projects')->except('projects.create', 'projects.show');
@@ -108,5 +109,5 @@ test('unknown menus fail with the menu name', function () {
     $this->withoutExceptionHandling();
     Route::get('/unknown-menu', fn (Navigation $navigation) => $navigation->menu('missing'))->name('unknown.menu');
 
-    expect(fn () => $this->get('/unknown-menu'))->toThrow(LogicException::class, "Unknown menu 'missing'");
+    expect(fn () => $this->get('/unknown-menu'))->toThrow(ResolutionFailed::class, "Unknown menu 'missing'");
 });

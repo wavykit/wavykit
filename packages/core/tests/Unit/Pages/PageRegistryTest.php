@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use WavyKit\Exceptions\InvalidDefinition;
 use WavyKit\Pages\Page;
 use WavyKit\Pages\PageRegistry;
 
@@ -30,9 +31,9 @@ test('registration snapshots nested builders', function () {
 test('invalid graphs fail validation', function (array $pages, string $message) {
     $registry = new PageRegistry;
     $registry->register(...$pages);
-    expect(fn () => $registry->finalize())->toThrow(LogicException::class, $message);
+    expect(fn () => $registry->finalize())->toThrow(InvalidDefinition::class, $message);
 })->with([
-    'missing parent' => [[Page::make('child')->parent('missing')], "Unknown page 'missing'"],
+    'missing parent' => [[Page::make('child')->parent('missing')], "Page 'child' references unknown parent 'missing'"],
     'cycle' => [[Page::make('a')->parent('b'), Page::make('b')->parent('a')], 'cycle'],
     'duplicate route' => [[Page::make('a')->route('shared'), Page::make('b')->route('shared')], "Route 'shared'"],
 ]);
@@ -40,20 +41,20 @@ test('invalid graphs fail validation', function (array $pages, string $message) 
 test('registration errors do not partially register a batch', function () {
     $registry = new PageRegistry;
     $registry->register(Page::make('existing'));
-    expect(fn () => $registry->register(Page::make('new'), Page::make('existing')))->toThrow(LogicException::class)
+    expect(fn () => $registry->register(Page::make('new'), Page::make('existing')))->toThrow(InvalidDefinition::class)
         ->and(array_column($registry->all(), 'id'))->toBe(['existing']);
 });
 
 test('nested and explicit conflicting parents are rejected', function () {
     $registry = new PageRegistry;
     expect(fn () => $registry->register(Page::make('root')->children(Page::make('child')->parent('other'))))
-        ->toThrow(LogicException::class, 'conflicting parents');
+        ->toThrow(InvalidDefinition::class, 'conflicting parents');
 });
 
 test('finalization rejects later registration', function () {
     $registry = new PageRegistry;
     $registry->finalize();
-    expect(fn () => $registry->register(Page::make('late')))->toThrow(LogicException::class, 'before the registry is resolved');
+    expect(fn () => $registry->register(Page::make('late')))->toThrow(InvalidDefinition::class, 'before the registry is resolved');
 });
 
 test('roots and siblings retain registration order on ties', function () {

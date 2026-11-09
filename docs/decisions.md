@@ -33,6 +33,11 @@ third-party dependency that an application might not want, such as Inertia or
 a search engine, or serves a different kind of adopter. Concepts that share
 the core's dependencies stay in the core as namespaces.
 
+**Laravel at the edges.** WavyKit targets Laravel only. Builders,
+definitions, and registries make no Laravel calls; readers, the request
+context, and service providers hold the Laravel-specific code. The full design
+guidelines are in [CONTRIBUTING.md](../CONTRIBUTING.md#design-guidelines).
+
 **Each package owns its own tools.** Inspection commands and test assertions
 ship with the package whose concepts they check, not in a shared testing or
 development package.

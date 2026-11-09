@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 use WavyKit\Context;
+use WavyKit\Exceptions\ResolutionFailed;
 use WavyKit\Navigation\Navigation;
 use WavyKit\Pages\Page;
 use WavyKit\Pages\PageRegistry;
@@ -46,7 +47,8 @@ test('bound resource labels and ancestor URLs remain isolated across requests', 
         ->assertJsonPath('breadcrumbs.1.label', 'Apollo')
         ->assertJsonPath('breadcrumbs.1.url', 'http://localhost/projects/42')
         ->assertJsonPath('breadcrumbs.2.label', 'Edit')
-        ->assertJsonPath('breadcrumbs.2.url', null);
+        ->assertJsonPath('breadcrumbs.2.url', 'http://localhost/projects/42/edit/settings')
+        ->assertJsonPath('breadcrumbs.2.current', true);
 
     $this->getJson('/projects/77/edit')->assertOk()
         ->assertJsonPath('breadcrumbs.1.label', 'Artemis')
@@ -78,7 +80,7 @@ test('explicit parameter mapping supports differently named child parameters', f
         ->middleware(SubstituteBindings::class)->name('mapped.edit');
     app(PageRegistry::class)->register(
         Page::make('mapped.show')->route('mapped.show')->label('Mapped project')
-            ->parameters(fn (Context $context): array => [
+            ->routeParameters(fn (Context $context): array => [
                 'project' => $context->parameter('item'),
                 'extra' => 'must not become a query string',
             ])->children(Page::make('mapped.edit')->route('mapped.edit')->label('Edit')),
@@ -96,7 +98,7 @@ test('missing destination parameters identify the page and route', function () {
     Route::get('/no-resource', fn (Navigation $navigation) => $navigation->breadcrumbs())->name('no.resource');
     $this->withoutExceptionHandling();
 
-    expect(fn () => $this->get('/no-resource'))->toThrow(LogicException::class, "page 'needs.resource' and route 'needs.resource'");
+    expect(fn () => $this->get('/no-resource'))->toThrow(ResolutionFailed::class, "page 'needs.resource' and route 'needs.resource'");
 });
 
 test('missing callback parameters retain the active and resolved page identifiers', function () {
@@ -105,21 +107,21 @@ test('missing callback parameters retain the active and resolved page identifier
     Route::get('/missing', fn (Navigation $navigation) => $navigation->breadcrumbs())->name('missing');
     $this->withoutExceptionHandling();
 
-    expect(fn () => $this->get('/missing'))->toThrow(LogicException::class, "Could not resolve label for page 'missing': Active page 'missing' is missing route parameter 'absent'");
+    expect(fn () => $this->get('/missing'))->toThrow(ResolutionFailed::class, "Could not resolve label for page 'missing': Active page 'missing' is missing route parameter 'absent'");
 });
 
 test('invalid label results identify the page', function () {
     app(PageRegistry::class)->register(Page::make('invalid.label')->route('invalid.label')->label(fn (): int => 123));
     Route::get('/invalid-label', fn (Navigation $navigation) => $navigation->breadcrumbs())->name('invalid.label');
     $this->withoutExceptionHandling();
-    expect(fn () => $this->get('/invalid-label'))->toThrow(LogicException::class, "Label callback for page 'invalid.label' must return a string");
+    expect(fn () => $this->get('/invalid-label'))->toThrow(ResolutionFailed::class, "Label callback for page 'invalid.label' must return a string");
 });
 
 test('invalid parameter mapping results identify the page', function (mixed $result) {
-    app(PageRegistry::class)->register(Page::make('invalid.mapping')->route('invalid.mapping')->parameters(fn (): mixed => $result)
+    app(PageRegistry::class)->register(Page::make('invalid.mapping')->route('invalid.mapping')->routeParameters(fn (): mixed => $result)
         ->children(Page::make('mapping.child')->route('mapping.child')));
     Route::get('/invalid-mapping/{project}', fn () => 'show')->name('invalid.mapping');
     Route::get('/mapping-child', fn (Navigation $navigation) => $navigation->breadcrumbs())->name('mapping.child');
     $this->withoutExceptionHandling();
-    expect(fn () => $this->get('/mapping-child'))->toThrow(LogicException::class, "Parameter callback for page 'invalid.mapping' must return an array keyed by route parameter name");
+    expect(fn () => $this->get('/mapping-child'))->toThrow(ResolutionFailed::class, "Route-parameter callback for page 'invalid.mapping' must return an array keyed by route parameter name");
 })->with(['non-array' => 'invalid', 'numeric keys' => [[42]]]);

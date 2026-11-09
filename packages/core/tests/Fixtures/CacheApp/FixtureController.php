@@ -22,7 +22,7 @@ final class FixtureController
         $request->setUserResolver(fn () => $request->header('X-Test-User') === 'alice' ? new GenericUser(['id' => 'alice']) : null);
 
         return [
-            'pageId' => $pages->page()?->id,
+            'pageId' => $pages->current()?->id,
             'user' => $pages->context()->user?->getAuthIdentifier(),
             'breadcrumbs' => $navigation->breadcrumbs(),
             'primary' => $navigation->menu('primary'),

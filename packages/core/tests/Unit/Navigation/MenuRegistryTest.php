@@ -2,14 +2,16 @@
 
 declare(strict_types=1);
 
-use WavyKit\Navigation\Menu;
+use WavyKit\Exceptions\InvalidDefinition;
+use WavyKit\Exceptions\ResolutionFailed;
+use WavyKit\Navigation\MenuEntry;
 use WavyKit\Navigation\MenuRegistry;
 use WavyKit\Pages\Page;
 use WavyKit\Pages\PageRegistry;
 
 test('menu registration snapshots nested placements', function () {
-    $entry = Menu::page('account')->label('Original');
-    $group = Menu::group('group')->children($entry);
+    $entry = MenuEntry::page('account')->label('Original');
+    $group = MenuEntry::group('group')->children($entry);
     $pages = new PageRegistry;
     $menus = new MenuRegistry($pages);
     $menus->define('primary', $group);
@@ -24,27 +26,27 @@ test('invalid menu references and duplicate placements fail even in hidden branc
     $pages->register(Page::make('account'));
     $menus = new MenuRegistry($pages);
     $menus->define('primary', ...$entries);
-    expect(fn () => $menus->finalize())->toThrow(LogicException::class, $message);
+    expect(fn () => $menus->finalize())->toThrow(InvalidDefinition::class, $message);
 })->with([
-    'missing page' => [[Menu::page('missing')->visibleWhen(fn (): bool => false)], "Menu 'primary' references unknown page 'missing'"],
-    'duplicate page' => [[Menu::page('account'), Menu::group('group')->children(Menu::page('account'))], "Menu 'primary' includes page 'account' more than once"],
-    'duplicate group' => [[Menu::group('group'), Menu::group('group')], "Menu 'primary' includes group 'group' more than once"],
+    'missing page' => [[MenuEntry::page('missing')->visibleWhen(fn (): bool => false)], "Menu 'primary' references unknown page 'missing'"],
+    'duplicate page' => [[MenuEntry::page('account'), MenuEntry::group('group')->children(MenuEntry::page('account'))], "Menu 'primary' includes page 'account' more than once"],
+    'duplicate group' => [[MenuEntry::group('group'), MenuEntry::group('group')], "Menu 'primary' includes group 'group' more than once"],
 ]);
 
 test('derived and explicit menu names cannot collide in either registration order', function () {
     $menus = new MenuRegistry(new PageRegistry);
     $menus->derive('primary');
-    expect(fn () => $menus->define('primary'))->toThrow(LogicException::class, 'unique');
+    expect(fn () => $menus->define('primary'))->toThrow(InvalidDefinition::class, 'unique');
     $other = new MenuRegistry(new PageRegistry);
     $other->define('primary');
-    expect(fn () => $other->derive('primary'))->toThrow(LogicException::class, 'unique');
+    expect(fn () => $other->derive('primary'))->toThrow(InvalidDefinition::class, 'unique');
 });
 
 test('cyclic menu builders fail without partially registering the menu', function () {
     $menus = new MenuRegistry(new PageRegistry);
-    $group = Menu::group('cycle');
+    $group = MenuEntry::group('cycle');
     $group->children($group);
-    expect(fn () => $menus->define('primary', $group))->toThrow(LogicException::class, 'cycle');
+    expect(fn () => $menus->define('primary', $group))->toThrow(InvalidDefinition::class, 'cycle');
     $menus->define('primary');
     expect($menus->entries('primary'))->toBe([]);
 });
@@ -53,12 +55,12 @@ test('menus reject changes after finalization and unknown menu names', function 
     $menus = new MenuRegistry(new PageRegistry);
     $derived = $menus->derive('primary');
     $menus->finalize();
-    expect(fn () => $menus->define('late'))->toThrow(LogicException::class, 'before the menu registry is resolved')
-        ->and(fn () => $menus->derive('later'))->toThrow(LogicException::class, 'before the menu registry is resolved')
-        ->and(fn () => $derived->except('late'))->toThrow(LogicException::class, 'before the menu registry is resolved')
-        ->and(fn () => $menus->entries('missing'))->toThrow(LogicException::class, "Unknown menu 'missing'")
-        ->and(fn () => $menus->roots('missing'))->toThrow(LogicException::class, "Unknown menu 'missing'")
-        ->and(fn () => $menus->exclusions('missing'))->toThrow(LogicException::class, "Unknown menu 'missing'");
+    expect(fn () => $menus->define('late'))->toThrow(InvalidDefinition::class, 'before the menu registry is resolved')
+        ->and(fn () => $menus->derive('later'))->toThrow(InvalidDefinition::class, 'before the menu registry is resolved')
+        ->and(fn () => $derived->except('late'))->toThrow(InvalidDefinition::class, 'before the menu registry is resolved')
+        ->and(fn () => $menus->entries('missing'))->toThrow(ResolutionFailed::class, "Unknown menu 'missing'")
+        ->and(fn () => $menus->roots('missing'))->toThrow(ResolutionFailed::class, "Unknown menu 'missing'")
+        ->and(fn () => $menus->exclusions('missing'))->toThrow(ResolutionFailed::class, "Unknown menu 'missing'");
 });
 
 test('duplicate derived placements and unknown roots or exclusions fail', function () {
@@ -66,25 +68,25 @@ test('duplicate derived placements and unknown roots or exclusions fail', functi
     $pages->register(Page::make('root')->children(Page::make('child')));
     $menus = new MenuRegistry($pages);
     $menus->derive('primary', 'root', 'child')->except('child');
-    expect(fn () => $menus->finalize())->toThrow(LogicException::class, "Menu 'primary' includes page 'child' more than once");
+    expect(fn () => $menus->finalize())->toThrow(InvalidDefinition::class, "Menu 'primary' includes page 'child' more than once");
 
     $other = new MenuRegistry($pages);
     $other->derive('footer', 'missing');
-    expect(fn () => $other->finalize())->toThrow(LogicException::class, "Menu 'footer' references unknown page 'missing'");
+    expect(fn () => $other->finalize())->toThrow(InvalidDefinition::class, "Menu 'footer' references unknown page 'missing'");
 
     $excluded = new MenuRegistry($pages);
     $excluded->derive('primary', 'root')->except('missing');
-    expect(fn () => $excluded->finalize())->toThrow(LogicException::class, "Menu 'primary' excludes unknown page 'missing'");
+    expect(fn () => $excluded->finalize())->toThrow(InvalidDefinition::class, "Menu 'primary' excludes unknown page 'missing'");
 });
 
 test('a failed validation leaves menus open for correction', function () {
     $pages = new PageRegistry;
     $pages->register(Page::make('root'));
     $menus = new MenuRegistry($pages);
-    $menus->define('primary', Menu::page('missing'));
-    expect(fn () => $menus->finalize())->toThrow(LogicException::class, 'missing');
+    $menus->define('primary', MenuEntry::page('missing'));
+    expect(fn () => $menus->finalize())->toThrow(InvalidDefinition::class, 'missing');
     $menus->derive('footer', 'root');
-    expect(fn () => $menus->finalize())->toThrow(LogicException::class, 'missing');
+    expect(fn () => $menus->finalize())->toThrow(InvalidDefinition::class, 'missing');
 });
 
 test('derived roots retain authored order and exclusions are read per menu', function () {

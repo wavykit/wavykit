@@ -8,7 +8,7 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use LogicException;
 use WavyKit\Context;
-use WavyKit\Navigation\Menu;
+use WavyKit\Navigation\MenuEntry;
 use WavyKit\Navigation\MenuRegistry;
 use WavyKit\Pages\Page;
 use WavyKit\Pages\PageRegistry;
@@ -38,9 +38,9 @@ final class FixtureProvider extends ServiceProvider
             ),
         );
         $menus->derive('primary', 'projects')->except('projects.show');
-        $menus->define('footer', Menu::group('tools')->label('Tools')->children(
-            Menu::page('projects')->label('All projects'),
-            Menu::page('projects.show')->visibleWhen(fn (Context $context): bool => $context->user !== null),
+        $menus->define('footer', MenuEntry::group('tools')->label('Tools')->children(
+            MenuEntry::page('projects')->label('All projects'),
+            MenuEntry::page('projects.show')->visibleWhen(fn (Context $context): bool => $context->user !== null),
         ));
     }
 }
