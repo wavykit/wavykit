@@ -37,10 +37,9 @@ the core's dependencies stay in the core as namespaces.
 ship with the package whose concepts they check, not in a shared testing or
 development package.
 
-**Transition.** Today the monorepo contains `wavykit/pages` and
-`wavykit/navigation`, with breadcrumbs in Pages and a `PageContext` class.
-Before `v0.1.0` they become `wavykit/core` with the structure above. Neither
-package has been published, so no installed application is affected.
+**History.** Pages and menus were first developed as two packages,
+`wavykit/pages` and `wavykit/navigation`, and merged into `wavykit/core` before
+`v0.1.0`. Neither was published, so no installed application is affected.
 
 ## Supported versions
 
@@ -52,12 +51,12 @@ widening support means adding those versions to CI.
 
 ### v0.1
 
-The first release, `v0.1.0`, publishes `wavykit/core` after the restructuring
-above and an API review. The review decides every public class, method, and
-output shape deliberately, such as making breadcrumbs and menu items the same
-kind of object, so that the release marks an API the maintainers intend to
-keep. Releases stay on 0.x, and changes remain possible but intentional.
-Release preparation is tracked in each package's release checklist.
+The first release, `v0.1.0`, publishes `wavykit/core` after an API review. The
+review decides every public class, method, and output shape deliberately, such
+as making breadcrumbs and menu items the same kind of object, so that the
+release marks an API the maintainers intend to keep. Releases stay on 0.x, and
+changes remain possible but intentional. Release preparation is tracked in each
+package's release checklist.
 
 Pull requests are limited to maintainers until the API is settled; issues and
 feedback are open.

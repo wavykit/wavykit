@@ -17,7 +17,7 @@ Requires PHP 8.3+ and Composer 2. From the repository root:
 ```sh
 composer install
 composer check            # every package
-composer check pages      # one package
+composer check core       # one package
 composer format [package] # apply Pint formatting
 ```
 

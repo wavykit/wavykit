@@ -1,33 +1,34 @@
 # WavyKit
 
-Composable Laravel components built on one shared map of your application's
-pages.
+One description of your Laravel app's experience — where users are, how they
+move around, and what they see — that every part of the interface reads.
 
-Each page is defined once, with a stable ID, its place in the hierarchy, a
-label, and the named route it belongs to. Every WavyKit component reads from
-that definition: breadcrumbs come from Pages and menus from Navigation, so
+Laravel has primitives for handling requests, but none for the experience
+around them, so route names, breadcrumb arrays, menu configuration, and page
+headings tend to drift apart. WavyKit starts with pages: each page is defined
+once, with a stable ID, its place in the hierarchy, a label, and the named
+route it belongs to. Breadcrumbs and menus read from that definition, so
 labels, URLs, and active states always agree. Routes, controllers,
-authorization, and rendering stay with your application. Components return
-plain data for Blade, Inertia, or any other frontend.
+authorization, and rendering stay with your application, and everything
+returns plain data for Blade, Inertia, or any other frontend.
 
 ## Getting started
 
-Most applications start with menus and breadcrumbs together:
-
 ```sh
-composer require wavykit/navigation
+composer require wavykit/core
 ```
 
-Navigation requires Pages, so this installs both. For breadcrumbs only, install
-`wavykit/pages` on its own. Both packages are unreleased; the first release is
-planned as `v0.1.0` for Laravel 13 and PHP 8.3+. The API is being finalized
-before that release, so pull requests are not open yet; issues and feedback
-are welcome (see [CONTRIBUTING.md](CONTRIBUTING.md)).
+The core provides pages, breadcrumbs, and menus. It is unreleased; the first
+release is planned as `v0.1.0` for Laravel 13 and PHP 8.3+. The API is being
+finalized before that release, so pull requests are not open yet; issues and
+feedback are welcome (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 
 | Package | Purpose |
 | --- | --- |
-| [`wavykit/pages`](packages/pages/README.md) | The foundation: page identity, hierarchy, route association, request context, and breadcrumbs. |
-| [`wavykit/navigation`](packages/navigation/README.md) | Named menus derived from, or arranged around, registered pages. Requires Pages. |
+| [`wavykit/core`](packages/core/README.md) | Pages (identity, hierarchy, route association, request context), breadcrumbs, and menus. |
+
+Integrations that need other libraries, starting with Inertia, will be
+separate packages.
 
 See [Direction and decisions](docs/decisions.md) for package boundaries,
 supported versions, and what is planned next.
@@ -40,7 +41,7 @@ documentation, and tool configuration:
 
 ```sh
 composer install
-composer check        # or: composer check pages navigation
+composer check        # or: composer check core
 ```
 
 Packages are released together with lockstep `vX.Y.Z` tags and distributed
@@ -51,7 +52,8 @@ published to Packagist yet.
 
 ## Ownership
 
-WavyKit maintainers own this repository. Pages was brought into the monorepo
-with its existing Git history; its Composer identity remains `wavykit/pages`.
-Navigation was extracted from Pages inside the monorepo.
+WavyKit maintainers own this repository. The core began as the Pages package,
+brought into the monorepo with its existing Git history; menus were developed
+as a separate Navigation package and merged back into the core before the
+first release.
 Publishing and repository distribution require separate decisions and approval.

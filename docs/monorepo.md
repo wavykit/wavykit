@@ -37,7 +37,7 @@ also holds the development dependencies, test autoloading, scripts, and the PHP
 ```sh
 composer install
 composer check            # every package
-composer check pages      # one package
+composer check core       # one package
 composer format [package] # apply Pint
 ```
 
@@ -58,12 +58,13 @@ not used: path repositories already install each package with its own
 Every package is published under the `wavykit/` Composer vendor and the
 `WavyKit\` PHP namespace, and its folder matches its package name.
 
-- **Components** have generic, descriptive names for the capability they
-  provide: `wavykit/pages` (`WavyKit\Pages\`), and later names such as
-  navigation or actions.
-- **Composed products**, which combine components with their own integration
+- **Packages** have generic, descriptive names: `wavykit/core`, and
+  integrations named after what they integrate, such as `wavykit/inertia`.
+  Namespaces inside a package are named after the concepts they hold, such as
+  `WavyKit\Pages\` and `WavyKit\Navigation\` in the core.
+- **Composed products**, which combine packages with their own integration
   code and conventions, have brand names: for example `wavykit/current`
-  (`WavyKit\Current\`).
+  (`WavyKit\Current\`), a working name.
 
 ## Layout choice
 
@@ -117,10 +118,11 @@ manifest requires them.
 
 ## One-time setup
 
-Steps 1–3 were done on 2026-11-09 for `wavykit/wavykit`, `wavykit/pages`, and
-`wavykit/navigation`, all public; the first split run with the app pushed `main`
-to both split repositories. Step 4 waits for the first release and needs
-separate approval:
+Steps 1–3 were done on 2026-11-09 for `wavykit/wavykit` and the former
+`wavykit/pages` and `wavykit/navigation` split repositories, all public. The
+core package (`packages/core/`) still needs its `core` split repository set up,
+and the former split repositories removed, with separate approval. Step 4 waits
+for the first release and needs separate approval:
 
 1. Create the monorepo on GitHub as `<owner>/wavykit` and push `main`.
 2. Create a read-only repository `<owner>/<name>` for each package, without

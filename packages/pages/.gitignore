@@ -1,6 +1,0 @@
-/vendor/
-/composer.lock
-/.phpunit.cache/
-/.phpstan-cache/
-/.phpunit.result.cache
-/.pest/
