@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Added
+
+- `WavyKit\Facades\Current`, a read-only facade for the current request:
+  `page()`, `pageId()`, `is(...$patterns)`, `breadcrumbs()`, `menu($name)`,
+  `context()`, and `user()`. The `WavyKit\Current` class behind it can be
+  injected instead; it holds no request state, so it is safe in queue workers
+  and Octane.
+
 ### Breaking
 
 - Marked as `@internal`, so they may change in any release:

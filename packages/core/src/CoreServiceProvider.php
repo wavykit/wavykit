@@ -20,5 +20,7 @@ final class CoreServiceProvider extends ServiceProvider
         $this->app->singleton(MenuRegistry::class);
         $this->app->scoped(Pages::class);
         $this->app->scoped(Navigation::class);
+        // Stateless, so the facade's cached instance never holds request state.
+        $this->app->singleton(Current::class);
     }
 }
