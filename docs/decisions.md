@@ -56,10 +56,10 @@ widening support means adding those versions to CI.
 
 ### v0.1
 
-The first release, `v0.1.0`, publishes `wavykit/core` after an API review. The
-review decides every public class, method, and output shape deliberately, such
-as making breadcrumbs and menu items the same kind of object, so that the
-release marks an API the maintainers intend to keep. Releases stay on 0.x, and
+The first release, `v0.1.0`, published `wavykit/core` on 2026-11-09 after an
+API review. The review decided every public class, method, and output shape
+deliberately, such as making breadcrumbs and menu items the same kind of
+object, so that the release marks an API the maintainers intend to keep. Releases stay on 0.x, and
 changes remain possible but intentional. Release preparation is tracked in each
 package's release checklist.
 
