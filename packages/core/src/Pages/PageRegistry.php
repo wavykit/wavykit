@@ -92,6 +92,8 @@ final class PageRegistry
     /**
      * Find an exact named-route association; null or unknown names return null.
      *
+     * @internal Read by Pages; resolve the current page through Pages::current().
+     *
      * @throws InvalidDefinition If registry finalization fails.
      */
     public function forRoute(?string $name): ?PageDefinition
@@ -108,6 +110,8 @@ final class PageRegistry
     /**
      * Read the complete page ancestry, including route-less pages.
      *
+     * @internal Read by Pages; resolve ancestry through Pages::activeTrail().
+     *
      * @return list<PageDefinition> Root first, including the requested page.
      *
      * @throws InvalidDefinition If registry finalization fails.
@@ -122,6 +126,8 @@ final class PageRegistry
      * Read immediate children in ascending order; ties retain registration order.
      *
      * Pass null for roots. An unknown parent ID returns an empty list.
+     *
+     * @internal Read by Navigation when it builds derived menus.
      *
      * @return list<PageDefinition>
      *

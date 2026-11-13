@@ -26,6 +26,7 @@ final class MenuRegistry
 
     private bool $finalized = false;
 
+    /** @internal Resolved from the container as a singleton. */
     public function __construct(private readonly PageRegistry $pages) {}
 
     /**

@@ -103,6 +103,13 @@ runs `composer check` on PHP 8.3, 8.4, and 8.5, with lowest and stable
 dependency resolutions. New packages are checked automatically once the root
 manifest requires them.
 
+The [backward-compatibility workflow](../.github/workflows/backward-compatibility.yml)
+runs [`bin/backward-compatibility`](../bin/backward-compatibility) on pull
+requests. It compares a subtree split of each package with the same split at
+the latest `v*` tag, using `roave/backward-compatibility-check`, and writes the
+report to the job summary. It never fails the pull request; see
+[CONTRIBUTING.md](../CONTRIBUTING.md#public-api) for what the report means.
+
 ## Adding a package
 
 1. Create `packages/<name>/` with the files listed under [Layout](#layout).

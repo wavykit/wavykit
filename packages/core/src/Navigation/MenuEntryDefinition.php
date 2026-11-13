@@ -7,7 +7,11 @@ namespace WavyKit\Navigation;
 use Closure;
 use WavyKit\Context;
 
-/** Immutable entry snapshot; group IDs identify presentation, page IDs reference definitions. */
+/**
+ * Immutable entry snapshot; group IDs identify presentation, page IDs reference definitions.
+ *
+ * @internal Read by Navigation through MenuRegistry::entries(); applications read MenuItem output.
+ */
 final readonly class MenuEntryDefinition
 {
     /**

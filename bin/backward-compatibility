@@ -1,0 +1,49 @@
+#!/bin/sh
+# Reports public API changes in each package since the latest v* tag, using
+# roave/backward-compatibility-check on subtree splits of the package.
+# Writes Markdown to $GITHUB_STEP_SUMMARY when set, otherwise to stdout.
+# Exits 1 when any package reports changes. Requires the checker on PATH or
+# in Composer's global bin directory, and full Git history with tags.
+set -eu
+
+root="$(cd "$(dirname "$0")/.." && pwd)"
+work="${WORK_DIR:-$(mktemp -d)}"
+summary="${GITHUB_STEP_SUMMARY:-/dev/stdout}"
+checker="$(command -v roave-backward-compatibility-check || echo "$(composer global config bin-dir --absolute --quiet)/roave-backward-compatibility-check")"
+
+cd "$root"
+tag="$(git tag --list 'v*' --sort=-v:refname | head -n 1)"
+if [ -z "$tag" ]; then
+    echo "No v* tag to compare with; nothing to report." >> "$summary"
+    exit 0
+fi
+
+status=0
+for package in $("$root/bin/packages"); do
+    if ! git cat-file -e "$tag:packages/$package" 2>/dev/null; then
+        printf '## %s\n\nNot in %s; skipped.\n\n' "$package" "$tag" >> "$summary"
+        continue
+    fi
+    base="$(git subtree split --prefix="packages/$package" "$tag")"
+    head="$(git subtree split --prefix="packages/$package" HEAD)"
+    git branch -f "bc/$package/base" "$base" >/dev/null
+    git branch -f "bc/$package/head" "$head" >/dev/null
+
+    # The checker requires a plain clone, not a worktree.
+    clone="$work/bc-$package"
+    rm -rf "$clone"
+    git clone --quiet --no-single-branch --branch "bc/$package/head" "$root" "$clone"
+    git -C "$clone" branch --quiet base "origin/bc/$package/base"
+
+    printf '## %s since %s\n\n' "$package" "$tag" >> "$summary"
+    report="$work/bc-$package.md"
+    if ! (cd "$clone" && "$checker" --from=base --to="bc/$package/head" --format=markdown > "$report"); then
+        status=1
+    fi
+    # Composer's audit notices go to stdout during the checker's installs.
+    grep -v '^No security vulnerability advisories found\.$' "$report" >> "$summary" || true
+    printf '\n' >> "$summary"
+    git branch -D "bc/$package/base" "bc/$package/head" >/dev/null
+done
+
+exit "$status"

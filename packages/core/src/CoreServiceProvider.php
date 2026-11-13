@@ -13,6 +13,7 @@ use WavyKit\Pages\Pages;
 /** Shares declarations across requests while scoping resolvers to the application request/job lifecycle. */
 final class CoreServiceProvider extends ServiceProvider
 {
+    /** @internal Called by Laravel; the bindings and their lifetimes are implementation details. */
     public function register(): void
     {
         $this->app->singleton(PageRegistry::class);

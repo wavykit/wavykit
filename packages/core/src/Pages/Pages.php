@@ -17,6 +17,7 @@ use WavyKit\Support\Label;
 /** Resolves registered pages for the current Laravel request; does not create routes or enforce access. */
 final readonly class Pages
 {
+    /** @internal Resolved from the container, scoped to the request or job. */
     public function __construct(
         private PageRegistry $registry,
         private Router $router,
