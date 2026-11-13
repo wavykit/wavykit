@@ -1,0 +1,43 @@
+name: Backward compatibility
+
+# Reports public API changes in each package since the latest tag. While
+# releases are on 0.x the report never blocks a pull request; flag breaking
+# changes in the package's CHANGELOG instead (see CONTRIBUTING.md).
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    name: Report changes since the latest tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # The checker needs PHP 8.4 or later; it runs as a separate tool and does
+      # not touch the monorepo's dependencies.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Install the checker
+        run: composer global require --no-interaction --no-progress roave/backward-compatibility-check
+
+      # The checker reads composer.json at a repository root, so compare
+      # subtree splits of each package, as published to its split repository.
+      - name: Compare each package with the latest tag
+        id: compare
+        continue-on-error: true
+        run: bin/backward-compatibility
+        env:
+          WORK_DIR: ${{ runner.temp }}
+
+      - name: Flag reported changes
+        if: steps.compare.outcome == 'failure'
+        run: echo "::warning title=Backward compatibility::Changes since the latest tag may break adopters. See the job summary, and flag breaking changes in the CHANGELOG."

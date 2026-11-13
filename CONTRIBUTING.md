@@ -52,6 +52,28 @@ See [docs/monorepo.md](docs/monorepo.md) for the layout and release process.
 8. **Every public addition is deliberate.** Each public class or method is
    documented, tested, and either supported or marked `@internal`.
 
+## Public API
+
+What the maintainers support, and what a release may change:
+
+- **Supported:** every public class, method, property, and enum case in a
+  package's `src/` that is not marked `@internal`, and the JSON shapes of output
+  objects such as `Breadcrumb` and `MenuItem`. The core's
+  `tests/Unit/PublicApiTest.php` lists the supported symbols, so any change to
+  the list is deliberate and reviewed.
+- **Internal:** anything marked `@internal`, such as constructors of objects
+  the package creates, registry methods only readers use, and builder hooks.
+  It may change in any release. PHPStan's `internalTag` feature toggle reports
+  calls to it from outside the `WavyKit` namespace.
+- **While on 0.x:** a minor release (for example 0.1 to 0.2) may change or
+  remove supported API; a patch release does not. Every such change is listed
+  under **Breaking** in the package's CHANGELOG. From 1.0, Semantic Versioning
+  applies.
+- **Checks:** the API list and architecture tests run in `composer check`. The
+  [backward-compatibility workflow](.github/workflows/backward-compatibility.yml)
+  reports changes since the latest tag on each pull request, without blocking
+  it while on 0.x.
+
 ## Pull requests
 
 These rules apply to maintainers now, and to everyone once contributions open.

@@ -20,6 +20,7 @@ use WavyKit\Support\Label;
  */
 final readonly class Navigation
 {
+    /** @internal Resolved from the container, scoped to the request or job. */
     public function __construct(
         private Pages $pages,
         private PageRegistry $registry,

@@ -2,7 +2,21 @@
 
 ## Unreleased
 
-No changes yet.
+### Breaking
+
+- Marked as `@internal`, so they may change in any release:
+  `PageRegistry::forRoute()`, `trail()`, and `children()` (use
+  `Pages::current()` and `Pages::activeTrail()`); the `Pages`, `Navigation`,
+  and `MenuRegistry` constructors (resolve them from the container);
+  `CoreServiceProvider::register()`; and `MenuEntryDefinition` (read resolved
+  `MenuItem` output). Behavior is unchanged.
+
+### Developer Experience
+
+- A test lists every supported public symbol, so changes to the public API are
+  deliberate; the policy is in the monorepo's CONTRIBUTING.md.
+- Architecture tests keep Laravel at the edges (readers, the request context,
+  and the service provider) and require strict types.
 
 ## 0.1.0 - 2026-11-09
 
