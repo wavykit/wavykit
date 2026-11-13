@@ -63,8 +63,11 @@ Every package is published under the `wavykit/` Composer vendor and the
   Namespaces inside a package are named after the concepts they hold, such as
   `WavyKit\Pages\` and `WavyKit\Navigation\` in the core.
 - **Composed products**, which combine packages with their own integration
-  code and conventions, have brand names: for example `wavykit/current`
-  (`WavyKit\Current\`), a working name.
+  code and conventions, have brand names, chosen when a product is scoped.
+- **Current** names only the core's read-only facade, `WavyKit\Facades\Current`,
+  and the `WavyKit\Current` class behind it; it is not a package or product
+  name. A new concept adds a reader method to `Current`, such as a future
+  `Current::subject()`, rather than a facade of its own.
 
 ## Layout choice
 

@@ -77,21 +77,35 @@ most one page. Route-less pages are valid.
 
 ### Reading the current page
 
-Inject `WavyKit\Pages\Pages` into a controller or resolve it in a view:
+Read the current request through the `WavyKit\Facades\Current` facade:
 
 ```php
-$pages = app(\WavyKit\Pages\Pages::class);
+use WavyKit\Facades\Current;
 
-$page = $pages->current();
-$context = $pages->context();
+$page = Current::page();
+$id = Current::pageId();
+$context = Current::context();
+
+if (Current::is('projects.*')) {
+    // The active page is a project page.
+}
 ```
 
-`current()` returns the immutable registered `PageDefinition` for the current
+`page()` returns the immutable registered `PageDefinition` for the current
 route, or null. It retains dynamic callbacks rather than executing them.
-`context()` returns a `WavyKit\Context` with the active definition, bound route
-parameters, and current user.
+`pageId()` returns its ID. `is()` matches the active page's ID against one or
+more patterns, with `*` as a wildcard, like Laravel's `routeIs()`; it checks
+the active page only, not its ancestors. `context()` returns a
+`WavyKit\Context` with the active definition, bound route parameters, and
+current user, which `Current::user()` also returns.
 
-Packages that build on the core resolve page output through the same request:
+`Current` only reads. To inject it instead, type-hint `WavyKit\Current`, the
+class behind the facade. It holds no request state, so it is safe in queue
+workers and Octane. Register pages and menus through `PageRegistry` and
+`MenuRegistry`, as shown above.
+
+Packages that build on the core read pages through `WavyKit\Pages\Pages`,
+which `Current` uses, and resolve page output through the same request:
 `activeTrail($context)` returns the active page's ancestry, root first;
 `label($page, $context)` and `url($page, $context)` resolve one page with the
 rules below.
@@ -156,11 +170,10 @@ route, with Laravel's URL-generation exception preserved as the cause.
 
 ## Breadcrumbs
 
-Inject `WavyKit\Navigation\Navigation` into a controller or resolve it in a
-view:
-
 ```php
-$breadcrumbs = app(\WavyKit\Navigation\Navigation::class)->breadcrumbs();
+use WavyKit\Facades\Current;
+
+$breadcrumbs = Current::breadcrumbs();
 ```
 
 On `projects.create`, breadcrumbs are Projects → Create project. Each is a
@@ -276,7 +289,9 @@ routes and controllers.
 ### Reading menus
 
 ```php
-$items = app(\WavyKit\Navigation\Navigation::class)->menu('primary');
+use WavyKit\Facades\Current;
+
+$items = Current::menu('primary');
 ```
 
 `menu()` returns `MenuItem` objects with nullable `pageId`, `label`, nullable
@@ -314,7 +329,7 @@ For example, create `resources/views/partials/menu.blade.php`:
 ```
 
 Render it inside an appropriately labelled navigation element with
-`@include('partials.menu', ['items' => $navigation->menu('primary')])`.
+`@include('partials.menu', ['items' => \WavyKit\Facades\Current::menu('primary')])`.
 
 ## Errors
 
@@ -389,7 +404,8 @@ guarantee.
 The initial release is intended to remain on 0.x while the public API is refined.
 Use minor releases for breaking changes during 0.x and patch releases for
 compatible fixes. At 1.0 and later, breaking public API changes require a major
-release. Releases are tagged `vMAJOR.MINOR.PATCH` on the WavyKit monorepo, which
+release. The monorepo's `CONTRIBUTING.md` defines what counts as public API:
+anything marked `@internal` may change in any release. Releases are tagged `vMAJOR.MINOR.PATCH` on the WavyKit monorepo, which
 versions its packages together and mirrors each tag to the read-only `core`
 split repository. Composer derives versions from those tags, so `composer.json`
 does not contain a version field. The release process is documented in the
