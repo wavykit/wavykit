@@ -1,0 +1,17 @@
+{
+    "name": "wavykit/inertia",
+    "description": "Share WavyKit pages, breadcrumbs, and menus with Inertia, with TypeScript types.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.3",
+        "illuminate/container": "^13.0",
+        "inertiajs/inertia-laravel": "^3.0",
+        "wavykit/core": "^0.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "WavyKit\\Inertia\\": "src/"
+        }
+    }
+}

@@ -9,14 +9,16 @@
             "url": "packages/*",
             "options": {
                 "versions": {
-                    "wavykit/core": "0.1.x-dev"
+                    "wavykit/core": "0.1.x-dev",
+                    "wavykit/inertia": "0.1.x-dev"
                 }
             }
         }
     ],
     "require": {
         "php": "^8.3",
-        "wavykit/core": "^0.1@dev"
+        "wavykit/core": "^0.1@dev",
+        "wavykit/inertia": "^0.1@dev"
     },
     "require-dev": {
         "laravel/pint": "^1.27",
@@ -27,7 +29,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "WavyKit\\Tests\\": "packages/core/tests/"
+            "WavyKit\\Tests\\": "packages/core/tests/",
+            "WavyKit\\Inertia\\Tests\\": "packages/inertia/tests/"
         }
     },
     "config": {

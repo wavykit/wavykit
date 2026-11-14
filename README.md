@@ -25,9 +25,9 @@ and feedback are welcome (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 | Package | Purpose |
 | --- | --- |
 | [`wavykit/core`](packages/core/README.md) | Pages (identity, hierarchy, route association, request context), breadcrumbs, and menus. |
+| [`wavykit/inertia`](packages/inertia/README.md) | Shares the page ID, breadcrumbs, and menus with Inertia, with TypeScript types. Unreleased; planned for `v0.2.0`. |
 
-Integrations that need other libraries, starting with Inertia, will be
-separate packages.
+Integrations that need other libraries are separate packages.
 
 See [Direction and decisions](docs/decisions.md) for package boundaries,
 supported versions, and what is planned next.
@@ -40,7 +40,7 @@ documentation, and tool configuration:
 
 ```sh
 composer install
-composer check        # or: composer check core
+composer check        # or: composer check core inertia
 ```
 
 Packages are released together with lockstep `vX.Y.Z` tags and distributed
